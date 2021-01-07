@@ -15,12 +15,13 @@
 /.gitignore         export-ignore
 /.gitmodules        export-ignore
 /.gutconfig.json    export-ignore
-/demo/              export-ignore
 /test/              export-ignore
+/datas/             export-ignore
 /screenshots/       export-ignore
 /addons/gut/        export-ignore
 /icon.png           export-ignore
 /icon.png.import    export-ignore
+/main.tscn          export-ignore
 /project.godot      export-ignore
 /default_env.tres   export-ignore
 /LICENSE            export-ignore
