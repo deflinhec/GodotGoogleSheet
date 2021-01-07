@@ -76,9 +76,15 @@ func _wait(_caller):
 		return
 	_sem.wait()
 
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		if use_thread and _thread.is_active():
+			_thread.wait_to_finish()
+
 
 func _init(new_host: Host = null):
 	host = new_host if new_host else host
+	connect("allset", self, "_on_allset")
 	if not use_thread:
 		return
 	_mutex = Mutex.new()
@@ -90,11 +96,11 @@ func start():
 	if not _queue.empty():
 		if not use_thread:
 			call_deferred("_thread_func", 0)
-		else:
+		elif not _thread.is_active():
+			_ternimate = false
 			_thread.start(self, "_thread_func", 0)
 	else:
 		call_deferred("emit_signal", "allset")
-	connect("allset", self, "_on_allset")
 
 
 func _on_allset():
@@ -109,6 +115,7 @@ func download() -> void:
 	_requesting = true
 	_post("download")
 	_unlock("download")
+	start()
 
 
 # 下載請求，取得下載檔案大小
@@ -205,6 +212,8 @@ func _is_ternimate() -> bool:
 func _thread_func(_u):
 	while not _is_ternimate():
 		_load_process()
+		if _is_ternimate():
+			break
 		_http_process()
 
 
