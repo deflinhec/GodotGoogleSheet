@@ -1,5 +1,7 @@
 # GodotGoogleSheet
 
+![Tests](https://github.com/deflinhec/GodotGoogleSheet/workflows/Run%20GUT%20Tests/badge.svg?branch=master)
+
 A plugin written in GDScript which downloads google spreadsheet with HTTP protocol.
     
 ## :coffee: Contributors
