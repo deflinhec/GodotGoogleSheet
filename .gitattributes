@@ -17,6 +17,7 @@
 /.gutconfig.json    export-ignore
 /demo/              export-ignore
 /test/              export-ignore
+/screenshots/       export-ignore
 /addons/gut/        export-ignore
 /icon.png           export-ignore
 /icon.png.import    export-ignore
