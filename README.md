@@ -12,11 +12,20 @@ A plugin written in GDScript which downloads google spreadsheet with HTTP protoc
 
 First of all, sheets requires download should be publish to web.
 
-    File -> Publish To Web
-	
+    File -> Publish to the web
+
+![](https://raw.githubusercontent.com/deflinhec/GodotGoogleSheet/master/screenshots/step01.png) ![](https://raw.githubusercontent.com/deflinhec/GodotGoogleSheet/master/screenshots/step02.png)
+--- 
+
+    Publish entire document
+
+<img src="https://raw.githubusercontent.com/deflinhec/GodotGoogleSheet/master/screenshots/step03.png" width="400" />
+
 Second, locate to your sheet id and sheet table index.
 
     https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=[SHEET_TABLE_INDEX]
+   
+![](https://raw.githubusercontent.com/deflinhec/GodotGoogleSheet/master/screenshots/step04.png)
 
 Third, preload gsheet into your own script.
 ```
