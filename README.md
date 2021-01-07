@@ -27,12 +27,15 @@ Second, locate to your sheet id and sheet table index.
    
 ![](https://raw.githubusercontent.com/deflinhec/GodotGoogleSheet/master/screenshots/step04.png)
 
-Third, preload gsheet into your own script.
+Finally, preload gsheet into your own script.
 ```
     const GSheet = preload("res://addons/google_sheet/gsheet.gd")
 ```
 
-### :radio_button: Load sheets from file.
+## :bookmark: Examples
+
+### Load sheets from file.
+Assuming files are already exist within our local filesystem.
 ```
     func _ready():
       var gsheet = GSheet.new()
@@ -42,8 +45,8 @@ Third, preload gsheet into your own script.
       yield(gsheet, "allset")
 ```
 
-### :radio_button: Download sheets from google service api.
-Download gsx format and convert to json format locally.
+### Download sheets from google service api.
+Download gsx format and convert it to json format locally.
 ``` 
     func _ready():
       var gsheet = GSheet.new()
@@ -53,8 +56,9 @@ Download gsx format and convert to json format locally.
       gsheet.download()
       yield(gsheet, "allset")
 ```
-### :radio_button: Download sheets from google service api through [gsx2json](http://gsx2json.com/).
-Addition layer bridges between game and google service, reduces significant large amount of bytes.
+
+### Download sheets from google service api through [gsx2json](http://gsx2json.com/).
+Addition layer bridges between game and google service, converting gsx format to json remotely and also reduces significant large amount of bytes.
 ```
     func _ready():
       var host = GSheet.Gsx2Json.new("gsx2json.com", 80)
@@ -65,8 +69,9 @@ Addition layer bridges between game and google service, reduces significant larg
       gsheet.download()
       yield(gsheet, "allset")
 ```
-### :radio_button: Two step download.
-Prompt user before download.
+
+### Two step download procedure.
+Request file size and prompt user before actual download.
 ```
     var gsheet = GSheet.new()
 
