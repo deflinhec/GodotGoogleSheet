@@ -35,7 +35,7 @@ Finally, preload gsheet into your own script.
 ## :bookmark: Examples
 
 - ### Load sheets from file.
-    Assuming files are already exist within our local filesystem.
+    Assuming files are already exist within your local filesystem.
     ```
         func _ready():
           var gsheet = GSheet.new()
@@ -57,8 +57,8 @@ Finally, preload gsheet into your own script.
           yield(gsheet, "allset")
     ```
 
-- ### Download sheets from google service api through [gsx2json](http://gsx2json.com/).
-    Addition layer bridges between game and google service, converting gsx format to json remotely and also reduces significant large amount of bytes.
+- ### Download sheets from google service api through [gsx2json](http://gsx2json.com/). [Optional]
+    Addition layer bridges between client and google service, converting gsx format to json remotely and also reduces significant large amount of bytes.
     ```
         func _ready():
           var host = GSheet.Gsx2Json.new("gsx2json.com", 80)
@@ -85,3 +85,7 @@ Finally, preload gsheet into your own script.
           gsheet.download()
           yield(gsheet, "allset")
     ```      
+
+## :clipboard: TODO-List
+
+- :white_large_square: Patch file versioning
