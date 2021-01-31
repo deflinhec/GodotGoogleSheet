@@ -396,6 +396,6 @@ static func parse(json: JSONParseResult) -> JSONParseResult:
 					elif value.empty():
 						new_row[name] = 0
 			rows[pkey] = new_row
-		response["dict"] = rows
+		response["rows"] = rows
 		json.result = response
 	return json
