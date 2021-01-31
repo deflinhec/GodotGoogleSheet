@@ -111,7 +111,6 @@ func _on_allset():
 	_thread.wait_to_finish()
 
 
-# 下載檔案
 func download() -> void:
 	_lock("download")
 	_requesting = true
@@ -120,7 +119,6 @@ func download() -> void:
 	start()
 
 
-# 下載請求，取得下載檔案大小
 func download_request() -> void:
 	_lock("request")
 	_requesting = true
@@ -347,6 +345,7 @@ func _http_process():
 	_ternimate = true
 	_unlock("process")
 
+# enfroce an array object to dictionary
 static func array2dict(array) -> Dictionary:
 	if array is Dictionary:
 		return array
@@ -356,6 +355,7 @@ static func array2dict(array) -> Dictionary:
 		dict[row[key] as String] = row
 	return dict 
 
+# sanitize data if directly response from spreadsheet.google.com
 static func parse(json: JSONParseResult) -> JSONParseResult:
 	var data : Dictionary = json.result
 	if data and data.has("feed") and data["feed"].has("entry"):
