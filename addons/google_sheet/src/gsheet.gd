@@ -106,10 +106,11 @@ func start():
 func _on_allset():
 	if not use_thread:
 		return
+	if not _thread.is_active():
+		return
 	_thread.wait_to_finish()
 
 
-# 下載檔案
 func download() -> void:
 	_lock("download")
 	_requesting = true
@@ -118,7 +119,6 @@ func download() -> void:
 	start()
 
 
-# 下載請求，取得下載檔案大小
 func download_request() -> void:
 	_lock("request")
 	_requesting = true
@@ -345,6 +345,7 @@ func _http_process():
 	_ternimate = true
 	_unlock("process")
 
+# enfroce an array object to dictionary
 static func array2dict(array) -> Dictionary:
 	if array is Dictionary:
 		return array
@@ -354,30 +355,35 @@ static func array2dict(array) -> Dictionary:
 		dict[row[key] as String] = row
 	return dict 
 
+# sanitize data if directly response from spreadsheet.google.com
 static func parse(json: JSONParseResult) -> JSONParseResult:
 	var data : Dictionary = json.result
 	if data and data.has("feed") and data["feed"].has("entry"):
 		var rows = {}
 		var response = {}
 		for entry in data["feed"]["entry"]:
-			var index = -1
+			var pkey = 0
 			var new_row = {}
 			var keys = entry.keys()
 			for key in keys:
-				if not key.begins_with("gsx$"):
-					continue
-				var name = key.substr(4)
-				var value = entry[key]["$t"]
-				if index < 0 and value.is_valid_integer():
-					index = value.to_int()
-				if name.begins_with("noex"):
-					continue
-				new_row[name] = value
-				if value.is_valid_integer():
-					new_row[name] = value.to_int()
-				elif value.empty():
-					new_row[name] = 0
-			rows[index] = new_row
-		response["rows"] = rows
+				# left most column as key
+				if key == "title":
+					var value = entry[key]["$t"]
+					if value.is_valid_integer():
+						pkey = value.to_int()
+				# seek for actual data
+				elif key.begins_with("gsx$"):
+					var name = key.substr(4)
+					# skip prefix with "noex" (non export)
+					if name.begins_with("noex"):
+						continue
+					var value = entry[key]["$t"]
+					new_row[name] = value
+					if value.is_valid_integer():
+						new_row[name] = value.to_int()
+					elif value.empty():
+						new_row[name] = 0
+			rows[pkey] = new_row
+		response["dict"] = rows
 		json.result = response
 	return json
