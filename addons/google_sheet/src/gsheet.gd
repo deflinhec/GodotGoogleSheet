@@ -106,6 +106,8 @@ func start():
 func _on_allset():
 	if not use_thread:
 		return
+	if not _thread.is_active():
+		return
 	_thread.wait_to_finish()
 
 
