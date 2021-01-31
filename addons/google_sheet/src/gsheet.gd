@@ -362,24 +362,28 @@ static func parse(json: JSONParseResult) -> JSONParseResult:
 		var rows = {}
 		var response = {}
 		for entry in data["feed"]["entry"]:
-			var index = -1
+			var pkey = 0
 			var new_row = {}
 			var keys = entry.keys()
 			for key in keys:
-				if not key.begins_with("gsx$"):
-					continue
-				var name = key.substr(4)
-				var value = entry[key]["$t"]
-				if index < 0 and value.is_valid_integer():
-					index = value.to_int()
-				if name.begins_with("noex"):
-					continue
-				new_row[name] = value
-				if value.is_valid_integer():
-					new_row[name] = value.to_int()
-				elif value.empty():
-					new_row[name] = 0
-			rows[index] = new_row
-		response["rows"] = rows
+				# left most column as key
+				if key == "title":
+					var value = entry[key]["$t"]
+					if value.is_valid_integer():
+						pkey = value.to_int()
+				# seek for actual data
+				elif key.begins_with("gsx$"):
+					var name = key.substr(4)
+					# skip prefix with "noex" (non export)
+					if name.begins_with("noex"):
+						continue
+					var value = entry[key]["$t"]
+					new_row[name] = value
+					if value.is_valid_integer():
+						new_row[name] = value.to_int()
+					elif value.empty():
+						new_row[name] = 0
+			rows[pkey] = new_row
+		response["dict"] = rows
 		json.result = response
 	return json
