@@ -378,24 +378,20 @@ static func parse(json: JSONParseResult) -> JSONParseResult:
 			var new_row = {}
 			var keys = entry.keys()
 			for key in keys:
-				# left most column as key
-				if key == "title":
-					var value = entry[key]["$t"]
-					if value.is_valid_integer():
-						pkey = value.to_int()
-				# seek for actual data
-				elif key.begins_with("gsx$"):
-					var name = key.substr(4)
-					# skip prefix with "noex" (non export)
-					if name.begins_with("noex"):
-						continue
-					var value = entry[key]["$t"]
-					new_row[name] = value
-					if value.is_valid_integer():
-						new_row[name] = value.to_int()
-					elif value.empty():
-						new_row[name] = 0
+				if not key.begins_with("gsx$"):
+					continue
+				var name = key.substr(4)
+				var value = entry[key]["$t"]
+				if pkey == 0 and value.is_valid_integer():
+					pkey = value.to_int()
+				if name.begins_with("noex"):
+					continue
+				new_row[name] = value
+				if value.is_valid_integer():
+					new_row[name] = value.to_int()
+				elif value.empty():
+					new_row[name] = 0
 			rows[pkey] = new_row
-		response["rows"] = rows
+		response["dict"] = rows
 		json.result = response
 	return json
