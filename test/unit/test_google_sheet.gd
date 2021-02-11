@@ -11,9 +11,12 @@ class DataManager extends Reference:
 
 const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
 
-func test_file_download():
+func before_each():
 	var dir = Directory.new()
 	dir.remove("res://datas/test.json")
+
+
+func test_file_download():
 	var gsheet = GSheet.new()
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
@@ -30,8 +33,6 @@ func test_file_download():
 
 
 func test_minimum_file_download():
-	var dir = Directory.new()
-	dir.remove("res://datas/test.json")
 	var host = GSheet.Gsx2JsonHost.new("gsx2json.com", 80)
 	var gsheet = GSheet.new(host)
 	var manager = DataManager.new()
@@ -43,14 +44,14 @@ func test_minimum_file_download():
 	yield(gsheet, "allset")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
-	var file = File.new()
-	assert_true(file.file_exists("res://datas/test.json"), 
+	assert_true(File.new().file_exists("res://datas/test.json"), 
+			"file should exist within filesystem")
 			"file should exist within filesystem")
 
 
 func test_load_exist_file():
-	var file = File.new()
-	assert_true(file.file_exists("res://datas/test.json"), 
+	yield(test_file_download(), "completed")
+	assert_true(File.new().file_exists("res://datas/test.json"), 
 			"file should already exist within filesystem")
 	var gsheet = GSheet.new()
 	var manager = DataManager.new()
