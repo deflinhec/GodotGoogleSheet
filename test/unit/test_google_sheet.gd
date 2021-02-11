@@ -46,7 +46,6 @@ func test_minimum_file_download():
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
 			"file should exist within filesystem")
-			"file should exist within filesystem")
 
 
 func test_load_exist_file():
