@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-const GSheet = preload("res://addons/google_sheet/src/gsheet_replicate.gd")
+const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
 
 const SPREADSHEETS: Array = [
 		["res://datas/test.json", 
