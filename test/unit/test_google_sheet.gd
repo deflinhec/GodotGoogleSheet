@@ -88,7 +88,7 @@ func test_file_download_replicate():
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	gsheet.start()
+	yield(gsheet.start(), "completed")
 	while not manager.allset and manager.timeout < 10:
 		yield(get_tree().create_timer(1.0), "timeout")
 		manager.timeout += 1

@@ -5,13 +5,11 @@ signal complete(name, dict)
 #warning-ignore:unused_signal
 signal allset
 #warning-ignore:unused_signal
-signal total_bytes_changed
+signal stage_changed
 #warning-ignore:unused_signal
-signal downloaded_bytes_changed
+signal steps_changed
 #warning-ignore:unused_signal
-signal total_files_changed
-#warning-ignore:unused_signal
-signal loaded_files_changed
+signal max_steps_changed
 
 # google API service
 # pros: reliable
@@ -48,22 +46,18 @@ const headers = ["User-Agent: Pirulo/1.0 (Godot)","Accept: */*"]
 # Debugger is not capable of debugging thread process.
 const use_thread: bool = true
 
+enum STAGE { NONE, LOAD, DOWNLOAD, COMPLETE }
+
 var host : Host = Host.new()
-var total_files: int = 0 setget _set_total_files
-var loaded_files: int = 0 setget _set_loaded_files
-var total_bytes: int = 0 setget _set_total_bytes
-var downloaded_bytes: int = 0 setget _set_downloaded_bytes
-var _requesting: bool = false
-var _ternimate: bool = false
+var stage: int = STAGE.NONE setget _set_stage, _get_stage
+var steps: int = 0 setget _set_steps, _get_steps
+var max_steps: int = 0 setget _set_max_steps, _get_max_steps
 
 var _sem: Semaphore
 var _mutex: Mutex
 var _thread: Thread
-var _queue = []
-var _pending = {}
-var _cached = {}
-var _files = []
-
+var _queue: Array
+var _files: Array
 
 func _lock(_caller):
 	if not use_thread:
@@ -98,63 +92,67 @@ func _init(files: Array, new_host: Host = null):
 	_init_queue(files)
 
 
+func _set_stage(new_value: int):
+	_lock("_set_stage")
+	if stage != new_value:
+		call_deferred("emit_signal", "stage_changed", new_value)
+	stage = new_value
+	_unlock("_set_stage")
+
+
+func _get_stage() -> int:
+	var value: int = 0
+	_lock("_get_stage")
+	value = stage
+	_unlock("_get_stage")
+	return value
+
+
+func _set_steps(new_value: int):
+	_lock("_set_steps")
+	if steps != new_value:
+		call_deferred("emit_signal", "steps_changed", new_value)
+	steps = new_value
+	_unlock("_set_steps")
+
+
+func _get_steps() -> int:
+	var value: int = 0
+	_lock("_get_steps")
+	value = steps
+	_unlock("_get_steps")
+	return value
+
+
+func _set_max_steps(new_value: int):
+	_lock("_set_max_steps")
+	if max_steps != new_value:
+		call_deferred("emit_signal", "max_steps_changed", new_value)
+	max_steps = new_value
+	_unlock("_set_max_steps")
+
+
+func _get_max_steps() -> int:
+	var value: int = 0
+	_lock("_get_max_steps")
+	value = max_steps
+	_unlock("_get_max_steps")
+	return value
+
+
 func start():
 	if not use_thread:
 		call_deferred("_thread_func", 0)
 	elif not _thread.is_active():
 		_thread.start(self, "_thread_func", 0)
-
-
-func _set_total_bytes(new_value: int):
-	if total_bytes != new_value:
-		call_deferred("emit_signal", "total_bytes_changed", new_value)
-	total_bytes = new_value
-
-
-func _set_downloaded_bytes(new_value: int):
-	if downloaded_bytes != new_value:
-		call_deferred("emit_signal", "downloaded_bytes_changed", new_value)
-	downloaded_bytes = new_value
-
-
-func _set_total_files(new_value: int):
-	if total_files != new_value:
-		call_deferred("emit_signal", "total_files_changed", new_value)
-	total_files = new_value
-
-
-func _set_loaded_files(new_value: int):
-	if loaded_files != new_value:
-		call_deferred("emit_signal", "loaded_files_changed", new_value)
-	loaded_files = new_value
-
-
-func is_loading() -> bool:
-	var state = false
-	_lock("is_loading")
-	state = _files.size() != 0
-	_unlock("is_loading")
-	return state
-
-
-func is_downloading() -> bool:
-	var state = false
-	_lock("is_downloading")
-	state = _queue.size() != 0 and _requesting
-	_unlock("is_downloading")
-	return state
+	yield(self, "allset")
 
 
 func get_progress() -> float:
-	var progress = 0.0
+	var progress: float = 0.0
 	_lock("get_progress")
-	if total_bytes == 0:
-		_unlock("get_progress")
-		return progress
-	if downloaded_bytes == 0:
-		_unlock("get_progress")
-		return progress
-	progress = float(downloaded_bytes) / float(total_bytes)
+	if max_steps != 0 and steps != 0:
+		progress = float(max_steps) / float(steps)
 	_unlock("get_progress")
 	return progress
 
@@ -178,29 +176,24 @@ func _init_queue(files: Array):
 			print("INFO: Require download: %s" % [info[0]])
 
 
-func _is_ternimate() -> bool:
-	var state = false
-	_lock("_is_ternimate")
-	state = _ternimate
-	_unlock("_is_ternimate")
-	return state
-
-
 func _thread_func(_u):
+	self.stage = STAGE.LOAD
 	_load_process()
+	self.stage = STAGE.DOWNLOAD
 	_http_process()
+	self.stage = STAGE.COMPLETE
 	call_deferred("emit_signal", "allset")
 
 
 func _load_process():
-	self.loaded_files = 0
-	self.total_files = _files.size()
+	self.steps = 0
+	self.max_steps = _files.size()
 	while not _files.empty():
 		var file: File = _files[0]
 		var buffer: String = file.get_as_text()
 		var json = JSON.parse(buffer)
 		var path = file.get_meta("path")
-		self.loaded_files += 1
+		self.steps += 1
 		call_deferred("emit_signal", "complete", path, json.result)
 		print("INFO: %s : %s" % [path, String.humanize_size(buffer.length())])
 		_files.erase(file)
@@ -208,15 +201,15 @@ func _load_process():
 
 
 func _http_process():
-	var queue: Array = []
-	self._total_bytes = 0
+	var queue: Array
+	self.steps = 0
+	self.max_steps = 0
 	while not _queue.empty():
 		var http: HTTPClient = _queue[0]
 		match http.get_status():
 			HTTPClient.STATUS_DISCONNECTED:
-				var res = http.connect_to_host(host.address, host.port)
-				if res != OK:
-					print("WARN: STATUS_CONNECTION_ERROR %s:%d"
+				if http.connect_to_host(host.address, host.port) != OK:
+					print("WARN: STATUS_DISCONNECTED %s:%d"
 						% [host.address, host.port])
 					_queue.erase(http)
 			HTTPClient.STATUS_CANT_CONNECT:
@@ -232,34 +225,33 @@ func _http_process():
 			HTTPClient.STATUS_RESOLVING:
 				http.poll()
 			HTTPClient.STATUS_CONNECTED:
-				var id = http.get_meta("id")
-				var sheet = http.get_meta("sheet")
-				var uri = host.uri % [id, sheet] 
-				var res = http.request(HTTPClient.METHOD_GET, uri, headers)
-				if res != OK:
+				var id: String = http.get_meta("id")
+				var sheet: int = http.get_meta("sheet")
+				var uri: String = host.uri % [id, sheet]
+				if http.request(HTTPClient.METHOD_GET, uri, headers) != OK:
 					print("WARN: STATUS_CONNECTION_ERROR %s:%d"
 						% [host.address, host.port])
 					_queue.erase(http)
 			HTTPClient.STATUS_REQUESTING:
 				http.poll()
 			HTTPClient.STATUS_BODY:
+				_queue.erase(http)
 				if not http.is_response_chunked():
-					self._total_bytes += http.get_response_body_length()
+					self.max_steps += http.get_response_body_length()
 				if http.has_response():
 					queue.push_back(http)
-				_queue.erase(http)
 	_queue = queue
 	while not _queue.empty():
+		var binaries: PoolByteArray
 		var http: HTTPClient = _queue[0]
-		var binaries = PoolByteArray() 
 		while http.get_status() == HTTPClient.STATUS_BODY:
 			# While there is body left to be read
 			http.poll()
 			# Get a chunk.
 			var chunk = http.read_response_body_chunk() 
 			if http.is_response_chunked():
-				self.total_bytes += chunk.size()
-			self.downloaded_bytes += chunk.size()
+				self.max_steps += chunk.size()
+			self.steps += chunk.size()
 			if chunk.size() == 0:
 				# Got nothing, wait for buffers to fill a bit.
 				OS.delay_usec(1000)
@@ -269,8 +261,7 @@ func _http_process():
 		var path = http.get_meta("path")
 		print("INFO: %s : %s" % [path.get_file(), 
 				String.humanize_size(binaries.size())])
-		var json = JSON.parse(binaries.get_string_from_utf8())
-		json = parse(json)
+		var json = parse(JSON.parse(binaries.get_string_from_utf8()))
 		if json.result.has("error"):
 			print("WARN: %s %s" % [json.result["error"], path])
 		elif json.result.has(host.field):
@@ -284,8 +275,8 @@ func _http_process():
 			print("WARN: %s %s" % [path, json.result])
 		_queue.erase(http)
 		print("INFO: Total bytes downloaded: %s/%s" % [
-				String.humanize_size(downloaded_bytes), 
-				String.humanize_size(total_bytes)])
+				String.humanize_size(self.steps), 
+				String.humanize_size(self.max_steps)])
 
 
 # enfroce an array object to dictionary
