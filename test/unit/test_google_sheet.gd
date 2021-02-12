@@ -69,7 +69,7 @@ func test_load_exist_file():
 
 
 func test_process_exist_file_meta():
-	var host = GVersion.Gsx2JsonppHost.new("localhost", 5000)
+	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
 	var gversion = GVersion.new(SPREADSHEETS, host)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
@@ -90,7 +90,7 @@ func test_process_nonexist_file_meta():
 	yield(test_file_download(), "completed")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
 			"file should exist")
-	var host = GVersion.Gsx2JsonppHost.new("localhost", 5000)
+	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
 	var gversion = GVersion.new(SPREADSHEETS, host)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
