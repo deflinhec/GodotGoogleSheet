@@ -13,23 +13,13 @@ on:
 jobs:
   test-action:
     runs-on: ubuntu-latest
-    services:
-      gsx2jsonpp:
-        image: deflinhec/gsx2jsonpp:latest
-        env:
-          ARGUMENTS: --host=0.0.0.0 --port=5000
-        ports:
-          - 5000:5000
-        volumes: 
-          - /volume:/workspace
-        options: >-
-          --name gsx2jsonpp
-          --health-cmd "nc -z localhost 5000"
-          --health-interval 10s 
-          --health-timeout 10s 
-          --health-retries 6 
-          --health-start-period 60s
     steps:
+    - name: Start Gsx2jsonpp
+      run: >-
+        /usr/bin/docker run -itd 
+        -e ARGUMENTS="--host=0.0.0.0 --port=5000" 
+        -p 5000:5000 -v /volume:/workspace 
+        --name gsx2jsonpp deflinhec/gsx2jsonpp:latest 
     - name: Checkout
       uses: actions/checkout@v2
     - name: Run Action
