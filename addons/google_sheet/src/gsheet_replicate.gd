@@ -46,9 +46,12 @@ const headers = ["User-Agent: Pirulo/1.0 (Godot)","Accept: */*"]
 # Debugger is not capable of debugging thread process.
 const use_thread: bool = true
 
+enum JOB { LOAD = 0, HTTP = 1 }
+
 enum STAGE { NONE, LOAD, DOWNLOAD, COMPLETE }
 
 var host : Host = Host.new()
+var mask: int = 0 setget , _get_mask
 var stage: int = STAGE.NONE setget _set_stage, _get_stage
 var steps: int = 0 setget _set_steps, _get_steps
 var max_steps: int = 0 setget _set_max_steps, _get_max_steps
@@ -140,7 +143,17 @@ func _get_max_steps() -> int:
 	return value
 
 
-func start():
+func _get_mask() -> int:
+	var value: int = 0
+	_lock("_get_mask")
+	value = mask
+	_unlock("_get_mask")
+	return value
+
+
+func start(array: PoolIntArray = [JOB.LOAD, JOB.HTTP]):
+	for v in array: 
+		mask = mask | (1 << v)
 	if not use_thread:
 		call_deferred("_thread_func", 0)
 	elif not _thread.is_active():
@@ -155,6 +168,10 @@ func get_progress() -> float:
 		progress = float(max_steps) / float(steps)
 	_unlock("get_progress")
 	return progress
+
+
+func contains(type: int) -> bool:
+	return self.mask & (1 << type) != 0
 
 
 func _init_queue(files: Array):
@@ -177,10 +194,12 @@ func _init_queue(files: Array):
 
 
 func _thread_func(_u):
-	self.stage = STAGE.LOAD
-	_load_process()
-	self.stage = STAGE.DOWNLOAD
-	_http_process()
+	if contains(JOB.LOAD):
+		self.stage = STAGE.LOAD
+		_load_process()
+	if contains(JOB.HTTP):
+		self.stage = STAGE.DOWNLOAD
+		_http_process()
 	self.stage = STAGE.COMPLETE
 	call_deferred("emit_signal", "allset")
 
