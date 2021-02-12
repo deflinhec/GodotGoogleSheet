@@ -111,6 +111,8 @@ func start(array: PoolIntArray = [JOB.LOAD, JOB.HTTP]) -> void:
 	elif not _thread.is_active():
 		_thread.start(self, "_thread_func", 0)
 	yield(self, "allset")
+	if use_thread and _thread.is_active():
+		_thread.wait_to_finish()
 
 
 func get_progress() -> float:
