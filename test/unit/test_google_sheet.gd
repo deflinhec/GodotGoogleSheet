@@ -13,6 +13,8 @@ class DataManager extends Reference:
 
 const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
 
+const RGSheet = preload("res://addons/google_sheet/src/gsheet_replicate.gd")
+
 func before_each():
 	var dir = Directory.new()
 	dir.remove("res://datas/test.json")
@@ -74,3 +76,20 @@ func test_load_exist_file():
 	print("INFO: allset %s times %d" % [manager.allset, manager.timeout])
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
+
+
+
+func test_file_download_replicate():
+	var files: Array = [
+		["res://datas/test.json", 
+		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
+	]
+	var gsheet = RGSheet.new(files)
+	var manager = DataManager.new()
+	gsheet.connect("complete", manager, "_on_complete")
+	gsheet.connect("allset", manager, "_on_allset")
+	yield(gsheet.start(), "completed")
+	assert_true(manager.datas.has("res://datas/test.json"),
+			"file should load into memory")
+	assert_true(File.new().file_exists("res://datas/test.json"), 
+			"file should write to filesystem")
