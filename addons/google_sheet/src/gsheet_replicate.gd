@@ -124,6 +124,10 @@ func get_progress() -> float:
 	return progress
 
 
+func contains(type: int) -> bool:
+	return self.mask & (1 << type) != 0
+
+
 func _lock(_caller) -> void:
 	if not use_thread:
 		return
@@ -177,10 +181,10 @@ func _init_queue(files: Array) -> void:
 
 
 func _thread_func(_u) -> void:
-	if self.mask & (1 << JOB.LOAD) != 0:
+	if contains(JOB.LOAD):
 		self.stage = STAGE.LOAD
 		_load_process()
-	if self.mask & (1 << JOB.HTTP) != 0:
+	if contains(JOB.HTTP):
 		self.stage = STAGE.DOWNLOAD
 		_http_process()
 	self.stage = STAGE.COMPLETE

@@ -7,7 +7,7 @@ const SPREADSHEETS: Array = [
 		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
 	]
 
-var gsheet = GSheet.new(SPREADSHEETS)
+var gsheet: GSheet = GSheet.new(SPREADSHEETS)
 
 var datas: Dictionary = {}
 
@@ -29,6 +29,7 @@ func _on_stage_changed(stage: int):
 		GSheet.STAGE.COMPLETE:
 			$Status.set_text("Complete")
 	$Status.add_color_override("font_color", Color.black)
+	$Button.disabled = GSheet.STAGE.COMPLETE != stage
 
 
 func _on_steps_changed(value: int) -> void:
@@ -48,4 +49,14 @@ func _on_allset():
 
 
 func _on_Button_pressed():
-	gsheet.start([GSheet.JOB.HTTP])
+	if not gsheet.contains(GSheet.JOB.HTTP):
+		gsheet.start([GSheet.JOB.HTTP])
+	else:
+		gsheet = GSheet.new(SPREADSHEETS)
+		gsheet.connect("allset", self, "_on_allset")
+		gsheet.connect("complete", self, "_on_complete")
+		gsheet.connect("stage_changed", self, "_on_stage_changed")
+		gsheet.connect("steps_changed", self, "_on_steps_changed")
+		gsheet.connect("max_steps_changed", self, "_on_max_steps_changed")
+		gsheet.start([GSheet.JOB.LOAD])
+		
