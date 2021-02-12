@@ -212,14 +212,6 @@ func _http_process():
 					print("WARN: STATUS_DISCONNECTED %s:%d"
 						% [host.address, host.port])
 					_queue.erase(http)
-			HTTPClient.STATUS_CANT_CONNECT:
-				print("WARN: STATUS_CANT_CONNECT %s:%d"
-						% [host.address, host.port])
-				_queue.erase(http)
-			HTTPClient.STATUS_CONNECTION_ERROR:
-				print("WARN: STATUS_CONNECTION_ERROR %s:%d"
-						% [host.address, host.port])
-				_queue.erase(http)
 			HTTPClient.STATUS_CONNECTING:
 				http.poll()
 			HTTPClient.STATUS_RESOLVING:
@@ -240,6 +232,10 @@ func _http_process():
 					self.max_steps += http.get_response_body_length()
 				if http.has_response():
 					queue.push_back(http)
+			_:
+				print("ERRR: HTTP status %d %s:%d"
+						% [http.get_status(), host.address, host.port])
+				_queue.erase(http)
 	_queue = queue
 	while not _queue.empty():
 		var binaries: PoolByteArray
