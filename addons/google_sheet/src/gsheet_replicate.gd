@@ -101,17 +101,8 @@ func _init(files: Array, new_host: Host = null):
 func start():
 	if not use_thread:
 		call_deferred("_thread_func", 0)
-		yield(self, "allset")
 	elif not _thread.is_active():
 		_thread.start(self, "_thread_func", 0)
-		yield(self, "allset")
-
-
-func download() -> void:
-	pass
-
-func download_request() -> void:
-	pass
 
 
 func _set_total_bytes(new_value: int):
@@ -241,8 +232,10 @@ func _http_process():
 			HTTPClient.STATUS_RESOLVING:
 				http.poll()
 			HTTPClient.STATUS_CONNECTED:
-				var path = http.get_meta("path")
-				var res = http.request(HTTPClient.METHOD_GET, path, headers)
+				var id = http.get_meta("id")
+				var sheet = http.get_meta("sheet")
+				var uri = host.uri % [id, sheet] 
+				var res = http.request(HTTPClient.METHOD_GET, uri, headers)
 				if res != OK:
 					print("WARN: STATUS_CONNECTION_ERROR %s:%d"
 						% [host.address, host.port])

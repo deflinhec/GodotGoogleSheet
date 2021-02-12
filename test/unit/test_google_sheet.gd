@@ -88,7 +88,11 @@ func test_file_download_replicate():
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start(), "completed")
+	gsheet.start()
+	while not manager.allset and manager.timeout < 10:
+		yield(get_tree().create_timer(1.0), "timeout")
+		manager.timeout += 1
+	print("INFO: allset %s times %d" % [manager.allset, manager.timeout])
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
