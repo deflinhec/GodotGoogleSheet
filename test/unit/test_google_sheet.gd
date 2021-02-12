@@ -81,8 +81,9 @@ func test_process_exist_file_meta():
 			"file should not exist")
 	assert_false(manager.outdated.empty(),
 			"file should mark as outdated")
-	assert_eq(manager.outdated[0].size(), 4,
-			"info size should equal to 4")
+	if not manager.outdated.empty():
+		assert_eq(manager.outdated[0].size(), 4,
+				"info size should equal to 4")
 
 
 func test_process_nonexist_file_meta():
