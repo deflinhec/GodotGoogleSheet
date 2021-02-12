@@ -4,12 +4,18 @@ class DataManager extends Reference:
 	var timeout: int = 0
 	var allset: bool = false
 	var datas: Dictionary
+	var outdated: Array
 	
 	func _on_complete(name: String, data: Dictionary):
 		datas[name] = data
 		
 	func _on_allset():
 		allset = true
+	
+	func _on_download(array: Array):
+		outdated = array
+
+const GVersion = preload("res://addons/google_sheet/src/gversion.gd")
 
 const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
 
@@ -60,3 +66,36 @@ func test_load_exist_file():
 	yield(gsheet.start([GSheet.JOB.LOAD]), "completed")
 	assert_eq(gsheet.stage, GSheet.STAGE.COMPLETE, 
 			"file should load into memory")
+
+
+func test_process_exist_file_meta():
+	var host = GVersion.Gsx2JsonppHost.new("localhost", 5000)
+	var gversion = GVersion.new(SPREADSHEETS, host)
+	var manager = DataManager.new()
+	gversion.connect("complete", manager, "_on_complete")
+	gversion.connect("download", manager, "_on_download")
+	yield(gversion.start(), "completed")
+	assert_false(manager.datas.has("res://datas/test.json"),
+			"file should not load into memory")
+	assert_false(File.new().file_exists("res://datas/test.json"), 
+			"file should not exist")
+	assert_false(manager.outdated.empty(),
+			"file should mark as outdated")
+	assert_eq(manager.outdated[0].size(), 4,
+			"info size should equal to 4")
+
+
+func test_process_nonexist_file_meta():
+	yield(test_file_download(), "completed")
+	assert_true(File.new().file_exists("res://datas/test.json"), 
+			"file should exist")
+	var host = GVersion.Gsx2JsonppHost.new("localhost", 5000)
+	var gversion = GVersion.new(SPREADSHEETS, host)
+	var manager = DataManager.new()
+	gversion.connect("complete", manager, "_on_complete")
+	gversion.connect("download", manager, "_on_download")
+	yield(gversion.start(), "completed")
+	assert_true(manager.datas.has("res://datas/test.json"),
+			"file should load into memory")
+	assert_true(manager.outdated.empty(),
+			"file should not mark as outdated")
