@@ -62,96 +62,48 @@ var _thread: Thread
 var _queue: Array
 var _files: Array
 
-func _lock(_caller):
-	if not use_thread:
-		return
-	_mutex.lock()
+# enfroce an array object to dictionary
+static func array2dict(array) -> Dictionary:
+	if array is Dictionary:
+		return array
+	var dict: Dictionary = {}
+	for row in array:
+		var key = row.keys()[0] 
+		dict[row[key] as String] = row
+	return dict 
 
 
-func _unlock(_caller):
-	if not use_thread:
-		return
-	_mutex.unlock()
+# sanitize data if directly response from spreadsheet.google.com
+static func parse(json: JSONParseResult) -> JSONParseResult:
+	var data : Dictionary = json.result
+	if data and data.has("feed") and data["feed"].has("entry"):
+		var rows = {}
+		var response = {}
+		for entry in data["feed"]["entry"]:
+			var pkey = 0
+			var new_row = {}
+			var keys = entry.keys()
+			for key in keys:
+				if not key.begins_with("gsx$"):
+					continue
+				var name = key.substr(4)
+				var value = entry[key]["$t"]
+				if pkey == 0 and value.is_valid_integer():
+					pkey = value.to_int()
+				if name.begins_with("noex"):
+					continue
+				new_row[name] = value
+				if value.is_valid_integer():
+					new_row[name] = value.to_int()
+				elif value.empty():
+					new_row[name] = 0
+			rows[pkey] = new_row
+		response["dict"] = rows
+		json.result = response
+	return json
 
 
-func _post(_caller):
-	if not use_thread:
-		return
-	_sem.post()
-
-
-func _wait(_caller):
-	if not use_thread:
-		return
-	_sem.wait()
-
-
-func _init(files: Array, new_host: Host = null):
-	host = new_host if new_host else host
-	if use_thread:
-		_mutex = Mutex.new()
-		_sem = Semaphore.new()
-		_thread = Thread.new()
-	_init_queue(files)
-
-
-func _set_stage(new_value: int):
-	_lock("_set_stage")
-	if stage != new_value:
-		call_deferred("emit_signal", "stage_changed", new_value)
-	stage = new_value
-	_unlock("_set_stage")
-
-
-func _get_stage() -> int:
-	var value: int = 0
-	_lock("_get_stage")
-	value = stage
-	_unlock("_get_stage")
-	return value
-
-
-func _set_steps(new_value: int):
-	_lock("_set_steps")
-	if steps != new_value:
-		call_deferred("emit_signal", "steps_changed", new_value)
-	steps = new_value
-	_unlock("_set_steps")
-
-
-func _get_steps() -> int:
-	var value: int = 0
-	_lock("_get_steps")
-	value = steps
-	_unlock("_get_steps")
-	return value
-
-
-func _set_max_steps(new_value: int):
-	_lock("_set_max_steps")
-	if max_steps != new_value:
-		call_deferred("emit_signal", "max_steps_changed", new_value)
-	max_steps = new_value
-	_unlock("_set_max_steps")
-
-
-func _get_max_steps() -> int:
-	var value: int = 0
-	_lock("_get_max_steps")
-	value = max_steps
-	_unlock("_get_max_steps")
-	return value
-
-
-func _get_mask() -> int:
-	var value: int = 0
-	_lock("_get_mask")
-	value = mask
-	_unlock("_get_mask")
-	return value
-
-
-func start(array: PoolIntArray = [JOB.LOAD, JOB.HTTP]):
+func start(array: PoolIntArray = [JOB.LOAD, JOB.HTTP]) -> void:
 	for v in array: 
 		mask = mask | (1 << v)
 	if not use_thread:
@@ -170,11 +122,40 @@ func get_progress() -> float:
 	return progress
 
 
-func contains(type: int) -> bool:
-	return self.mask & (1 << type) != 0
+func _lock(_caller) -> void:
+	if not use_thread:
+		return
+	_mutex.lock()
 
 
-func _init_queue(files: Array):
+func _unlock(_caller) -> void:
+	if not use_thread:
+		return
+	_mutex.unlock()
+
+
+func _post(_caller) -> void:
+	if not use_thread:
+		return
+	_sem.post()
+
+
+func _wait(_caller) -> void:
+	if not use_thread:
+		return
+	_sem.wait()
+
+
+func _init(files: Array, new_host: Host = null) -> void:
+	host = new_host if new_host else host
+	if use_thread:
+		_mutex = Mutex.new()
+		_sem = Semaphore.new()
+		_thread = Thread.new()
+	_init_queue(files)
+
+
+func _init_queue(files: Array) -> void:
 	for info in files:
 		var http = HTTPClient.new()
 		http.set_meta("path", info[0])
@@ -193,18 +174,18 @@ func _init_queue(files: Array):
 			print("INFO: Require download: %s" % [info[0]])
 
 
-func _thread_func(_u):
-	if contains(JOB.LOAD):
+func _thread_func(_u) -> void:
+	if self.mask & (1 << JOB.LOAD) != 0:
 		self.stage = STAGE.LOAD
 		_load_process()
-	if contains(JOB.HTTP):
+	if self.mask & (1 << JOB.HTTP) != 0:
 		self.stage = STAGE.DOWNLOAD
 		_http_process()
 	self.stage = STAGE.COMPLETE
 	call_deferred("emit_signal", "allset")
 
 
-func _load_process():
+func _load_process() -> void:
 	self.steps = 0
 	self.max_steps = _files.size()
 	while not _files.empty():
@@ -219,7 +200,7 @@ func _load_process():
 		file.close()
 
 
-func _http_process():
+func _http_process() -> void:
 	var queue: Array
 	self.steps = 0
 	self.max_steps = 0
@@ -294,42 +275,57 @@ func _http_process():
 				String.humanize_size(self.max_steps)])
 
 
-# enfroce an array object to dictionary
-static func array2dict(array) -> Dictionary:
-	if array is Dictionary:
-		return array
-	var dict: Dictionary = {}
-	for row in array:
-		var key = row.keys()[0] 
-		dict[row[key] as String] = row
-	return dict 
+func _set_stage(new_value: int) -> void:
+	_lock("_set_stage")
+	if stage != new_value:
+		call_deferred("emit_signal", "stage_changed", new_value)
+	stage = new_value
+	_unlock("_set_stage")
 
 
-# sanitize data if directly response from spreadsheet.google.com
-static func parse(json: JSONParseResult) -> JSONParseResult:
-	var data : Dictionary = json.result
-	if data and data.has("feed") and data["feed"].has("entry"):
-		var rows = {}
-		var response = {}
-		for entry in data["feed"]["entry"]:
-			var pkey = 0
-			var new_row = {}
-			var keys = entry.keys()
-			for key in keys:
-				if not key.begins_with("gsx$"):
-					continue
-				var name = key.substr(4)
-				var value = entry[key]["$t"]
-				if pkey == 0 and value.is_valid_integer():
-					pkey = value.to_int()
-				if name.begins_with("noex"):
-					continue
-				new_row[name] = value
-				if value.is_valid_integer():
-					new_row[name] = value.to_int()
-				elif value.empty():
-					new_row[name] = 0
-			rows[pkey] = new_row
-		response["dict"] = rows
-		json.result = response
-	return json
+func _get_stage() -> int:
+	var value: int = 0
+	_lock("_get_stage")
+	value = stage
+	_unlock("_get_stage")
+	return value
+
+
+func _set_steps(new_value: int) -> void:
+	_lock("_set_steps")
+	if steps != new_value:
+		call_deferred("emit_signal", "steps_changed", new_value)
+	steps = new_value
+	_unlock("_set_steps")
+
+
+func _get_steps() -> int:
+	var value: int = 0
+	_lock("_get_steps")
+	value = steps
+	_unlock("_get_steps")
+	return value
+
+
+func _set_max_steps(new_value: int) -> void:
+	_lock("_set_max_steps")
+	if max_steps != new_value:
+		call_deferred("emit_signal", "max_steps_changed", new_value)
+	max_steps = new_value
+	_unlock("_set_max_steps")
+
+
+func _get_max_steps() -> int:
+	var value: int = 0
+	_lock("_get_max_steps")
+	value = max_steps
+	_unlock("_get_max_steps")
+	return value
+
+
+func _get_mask() -> int:
+	var value: int = 0
+	_lock("_get_mask")
+	value = mask
+	_unlock("_get_mask")
+	return value

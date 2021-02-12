@@ -30,8 +30,6 @@ func test_file_download():
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
 	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP]), "completed")
-	assert_true(gsheet.contains(GSheet.JOB.LOAD))
-	assert_true(gsheet.contains(GSheet.JOB.HTTP))
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
@@ -45,8 +43,6 @@ func test_minimum_file_download():
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
 	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP]), "completed")
-	assert_true(gsheet.contains(GSheet.JOB.LOAD))
-	assert_true(gsheet.contains(GSheet.JOB.HTTP))
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
@@ -62,7 +58,5 @@ func test_load_exist_file():
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
 	yield(gsheet.start([GSheet.JOB.LOAD]), "completed")
-	assert_true(gsheet.contains(GSheet.JOB.LOAD))
-	assert_false(gsheet.contains(GSheet.JOB.HTTP))
 	assert_eq(gsheet.stage, GSheet.STAGE.COMPLETE, 
 			"file should load into memory")
