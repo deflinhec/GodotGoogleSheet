@@ -20,6 +20,9 @@ jobs:
         -e ARGUMENTS="--host=0.0.0.0 --port=5000" 
         -v /volume:/workspace --network host 
         --name gsx2jsonpp deflinhec/gsx2jsonpp:latest 
+    - name: Show Gsx2jsonpp info
+      run: >-
+        cat /volume/info.log
     - name: Checkout
       uses: actions/checkout@v2
     - name: Run Action
