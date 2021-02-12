@@ -7,11 +7,12 @@ const SPREADSHEETS: Array = [
 		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
 	]
 
-var gsheet: GSheet = GSheet.new(SPREADSHEETS)
+var gsheet: GSheet
 
 var datas: Dictionary = {}
 
 func _ready():
+	gsheet = GSheet.new(SPREADSHEETS)
 	gsheet.connect("allset", self, "_on_allset")
 	gsheet.connect("complete", self, "_on_complete")
 	gsheet.connect("stage_changed", self, "_on_stage_changed")
