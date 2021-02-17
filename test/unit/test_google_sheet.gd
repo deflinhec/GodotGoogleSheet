@@ -15,6 +15,8 @@ class DataManager extends Reference:
 	func _on_download(array: Array):
 		outdated = array
 
+const GConfig = preload("res://addons/google_sheet/src/config.gd")
+
 const GVersion = preload("res://addons/google_sheet/src/gversion.gd")
 
 const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
@@ -24,6 +26,9 @@ const SPREADSHEETS: Array = [
 		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
 	]
 
+var Gsx2JsonHost = GConfig.Gsx2JsonHost.new("gsx2json.com", 80)
+
+var Gsx2JsonppHost = GConfig.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
 
 func before_each():
 	var dir = Directory.new()
@@ -43,8 +48,7 @@ func test_file_download():
 
 
 func test_minimum_file_download():
-	var host = GSheet.Gsx2JsonHost.new("gsx2json.com", 80)
-	var gsheet = GSheet.new(SPREADSHEETS, host)
+	var gsheet = GSheet.new(SPREADSHEETS, Gsx2JsonHost)
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
@@ -69,8 +73,7 @@ func test_load_exist_file():
 
 
 func test_process_missing_files():
-	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
-	var gversion = GVersion.new(SPREADSHEETS, host)
+	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
 	gversion.connect("download", manager, "_on_download")
@@ -87,8 +90,7 @@ func test_process_latest_files():
 	yield(test_file_download(), "completed")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
 			"file should exist")
-	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
-	var gversion = GVersion.new(SPREADSHEETS, host)
+	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
 	gversion.connect("download", manager, "_on_download")
@@ -100,16 +102,14 @@ func test_process_latest_files():
 
 
 func test_download_missing_files():
-	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
-	var gversion = GVersion.new(SPREADSHEETS, host)
+	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
 	gversion.connect("download", manager, "_on_download")
 	yield(gversion.start(), "completed")
 	assert_false(manager.outdated.empty(),
 			"file should mark as outdated")
-	host = GSheet.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
-	var gsheet = GSheet.new(manager.outdated, host)
+	var gsheet = GSheet.new(manager.outdated, Gsx2JsonppHost)
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
 	yield(gsheet.start([GSheet.JOB.HTTP]), "completed")

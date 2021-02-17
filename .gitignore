@@ -3,10 +3,9 @@
 .import/
 export.cfg
 export_presets.cfg
-
+datas/
 
 # Gsx2jsonpp service
-
 volume/
 
 # Mono-specific ignores

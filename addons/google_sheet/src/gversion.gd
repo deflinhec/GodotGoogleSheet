@@ -13,20 +13,7 @@ signal steps_changed
 #warning-ignore:unused_signal
 signal max_steps_changed
 
-class Host extends Reference:
-	var port = 80
-	var address = "spreadsheet.google.com"
-	var uri = "/feeds/list/%s/%d/public/values?alt=json"
-
-# gsx2jsonpp API service
-# pros: less bytes, predictable bytes length
-# cons: self-host
-# https://github.com/deflinhec/gsx2jsonpp
-class Gsx2JsonppHost extends Host:
-	func _init(new_address: String, new_port: int):
-		port = new_port
-		address = new_address
-		uri = "/api?id=%s&sheet=%d&columns=false&rows=false&meta=true"
+const Host = preload("config.gd").Host
 
 const headers = ["User-Agent: Pirulo/1.0 (Godot)","Accept: */*"]
 
