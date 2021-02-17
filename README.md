@@ -25,10 +25,10 @@ https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit#gid=[SHEET_NUMBER]
 Finally, defined an array which contains all spreadsheets and preload script.
 
 ```
-    const SPREADSHEETS: Array = [
-        ["res://datas/test.json", "1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
-    ]
-    const GSheet = preload("res://addons/google_sheet/gsheet.gd")
+const SPREADSHEETS: Array = [
+    ["res://datas/test.json", "1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
+]
+const GSheet = preload("res://addons/google_sheet/gsheet.gd")
 ```
 
 ## :bookmark: Examples
@@ -37,54 +37,54 @@ Finally, defined an array which contains all spreadsheets and preload script.
 
   Assuming files are already exist within your local filesystem.
   ```
-      var gsheet: GSheet = null 
-      func _ready():
-        gsheet = GSheet.new(SPREADSHEETS)
-        gsheet.connect("complete", self, "_on_complete")
-        gsheet.connect("allset", self, "_on_allset")
-        gsheet.start([GSheet.JOB.LOAD])
+  var gsheet: GSheet = null 
+  func _ready():
+    gsheet = GSheet.new(SPREADSHEETS)
+    gsheet.connect("complete", self, "_on_complete")
+    gsheet.connect("allset", self, "_on_allset")
+    gsheet.start([GSheet.JOB.LOAD])
         
-      func _on_complete(name: String, data: Dictionary):
-        pass
+  func _on_complete(name: String, data: Dictionary):
+    pass
 	  
-      func _on_allset():
-        pass
-   ```
+  func _on_allset():
+    pass
+  ```
 
 - ### Download sheets from google service api.
-    Download gsx format and convert it to json format locally.
-    ``` 
-        var gsheet: GSheet = null
-        func _ready():
-	  gsheet = GSheet.new(SPREADSHEETS)
-	  gsheet.connect("allset", self, "_on_allset")
-	  gsheet.connect("complete", self, "_on_complete")
-          gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
+  
+  Download gsx format and convert it to json format locally.
+  ``` 
+  var gsheet: GSheet = null
+  func _ready():
+    gsheet = GSheet.new(SPREADSHEETS)
+    gsheet.connect("allset", self, "_on_allset")
+    gsheet.connect("complete", self, "_on_complete")
+    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
 	
-	func _on_complete(name: String, data: Dictionary):
-	    pass
+  func _on_complete(name: String, data: Dictionary):
+    pass
 	
-	func _on_allset():
-            pass
-    ```
+  func _on_allset():
+    pass
+  ```
 
 - ### Download sheets from google service api through [gsx2json](http://gsx2json.com/). [Optional]
-    Addition layer bridges between client and google service, converting gsx format to json remotely and also reduces significant large amount of bytes.
-    - #### non-block
-    ```
-        var gsheet: GSheet = null
-        func _ready():
-          var host = GSheet.Gsx2Json.new("gsx2json.com", 80)
-          var gsheet = GSheet.new(SPREADSHEETS, host)
-	  gsheet.connect("allset", self, "_on_allset")
-          gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
+  Addition layer bridges between client and google service, converting gsx format to json remotely and also reduces significant large amount of bytes.
+  ```
+  var gsheet: GSheet = null
+  func _ready():
+    var host = GSheet.Gsx2Json.new("gsx2json.com", 80)
+    gsheet = GSheet.new(SPREADSHEETS, host)
+    gsheet.connect("allset", self, "_on_allset")
+    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
 	
-	func _on_complete(name: String, data: Dictionary):
-	    pass
+    func _on_complete(name: String, data: Dictionary):
+      pass
 	
-	func _on_allset():
-            pass
-    ```
+    func _on_allset():
+      pass
+  ```
 
 
 ## :clipboard: TODO-List
