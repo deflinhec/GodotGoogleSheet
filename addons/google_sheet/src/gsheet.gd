@@ -141,6 +141,10 @@ func _init_queue(files: Array) -> void:
 		http.set_meta("sheet", info[2])
 		_queue.push_back(http)
 		
+		var dir = Directory.new()
+		var path = info[0].get_base_dir()
+		dir.make_dir_recursive(path)
+		
 		var file = File.new()
 		if file.file_exists(info[0]):
 			file.set_meta("path", info[0])
