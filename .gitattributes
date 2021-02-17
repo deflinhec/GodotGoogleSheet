@@ -15,6 +15,7 @@
 /.gitignore         export-ignore
 /.gitmodules        export-ignore
 /.gutconfig.json    export-ignore
+/scripts/           export-ignore
 /test/              export-ignore
 /datas/             export-ignore
 /demo/              export-ignore
@@ -26,3 +27,8 @@
 /default_env.tres   export-ignore
 /LICENSE            export-ignore
 /README.md          export-ignore
+
+# git should never touch line endings
+* -text
+
+*.sh text eol=lf

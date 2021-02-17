@@ -68,7 +68,7 @@ func test_load_exist_file():
 			"file should load into memory")
 
 
-func test_process_exist_file_meta():
+func test_process_missing_files():
 	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
 	var gversion = GVersion.new(SPREADSHEETS, host)
 	var manager = DataManager.new()
@@ -81,12 +81,9 @@ func test_process_exist_file_meta():
 			"file should not exist")
 	assert_false(manager.outdated.empty(),
 			"file should mark as outdated")
-	if not manager.outdated.empty():
-		assert_eq(manager.outdated[0].size(), 4,
-				"info size should equal to 4")
 
 
-func test_process_nonexist_file_meta():
+func test_process_latest_files():
 	yield(test_file_download(), "completed")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
 			"file should exist")
@@ -100,3 +97,23 @@ func test_process_nonexist_file_meta():
 			"file should load into memory")
 	assert_true(manager.outdated.empty(),
 			"file should not mark as outdated")
+
+
+func test_download_missing_files():
+	var host = GVersion.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
+	var gversion = GVersion.new(SPREADSHEETS, host)
+	var manager = DataManager.new()
+	gversion.connect("complete", manager, "_on_complete")
+	gversion.connect("download", manager, "_on_download")
+	yield(gversion.start(), "completed")
+	assert_false(manager.outdated.empty(),
+			"file should mark as outdated")
+	host = GSheet.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
+	var gsheet = GSheet.new(manager.outdated, host)
+	gsheet.connect("complete", manager, "_on_complete")
+	gsheet.connect("allset", manager, "_on_allset")
+	yield(gsheet.start([GSheet.JOB.HTTP]), "completed")
+	assert_true(manager.datas.has("res://datas/test.json"),
+			"file should load into memory")
+	assert_true(File.new().file_exists("res://datas/test.json"), 
+			"file should exist")
