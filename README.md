@@ -29,6 +29,10 @@ const SPREADSHEETS: Array = [
     ["res://datas/test.json", "1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
 ]
 const GSheet = preload("res://addons/google_sheet/gsheet.gd")
+
+const GConfig = preload("res://addons/google_sheet/config.gd")
+
+const GVersion = preload("res://addons/google_sheet/gversion.gd")
 ```
 
 ## :bookmark: Examples
@@ -37,18 +41,19 @@ const GSheet = preload("res://addons/google_sheet/gsheet.gd")
 
   Assuming files are already exist within your local filesystem.
   ```
-  var gsheet: GSheet = null 
+  var gsheet: GSheet = null
+  var datas: Dictionary = {}
   func _ready():
     gsheet = GSheet.new(SPREADSHEETS)
-    gsheet.connect("complete", self, "_on_complete")
     gsheet.connect("allset", self, "_on_allset")
+    gsheet.connect("complete", self, "_on_complete")
     gsheet.start([GSheet.JOB.LOAD])
-        
+    
   func _on_complete(name: String, data: Dictionary):
-    pass
-	  
+    datas[name] = data
+    
   func _on_allset():
-    pass
+    pass # do some extra logic after completion
   ```
 
 - ### Download sheets from google service api.
@@ -56,36 +61,63 @@ const GSheet = preload("res://addons/google_sheet/gsheet.gd")
   Download gsx format and convert it to json format locally.
   ``` 
   var gsheet: GSheet = null
+  var datas: Dictionary = {}
   func _ready():
     gsheet = GSheet.new(SPREADSHEETS)
     gsheet.connect("allset", self, "_on_allset")
     gsheet.connect("complete", self, "_on_complete")
     gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
-	
+    
   func _on_complete(name: String, data: Dictionary):
-    pass
-	
+    datas[name] = data
+    
   func _on_allset():
-    pass
+    pass # do some extra logic after completion
   ```
 
 - ### Download sheets from google service api through [gsx2json](http://gsx2json.com/). [Optional]
   Addition layer bridges between client and google service, converting gsx format to json remotely and also reduces significant large amount of bytes.
   ```
   var gsheet: GSheet = null
+  var datas: Dictionary = {}
   func _ready():
-    var host = GSheet.Gsx2Json.new("gsx2json.com", 80)
+    var host = GConfig.Gsx2JsonHost.new("gsx2json.com", 80)
     gsheet = GSheet.new(SPREADSHEETS, host)
+    gsheet.connect("complete", self, "_on_complete")
     gsheet.connect("allset", self, "_on_allset")
+    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
+    
+  func _on_complete(name: String, data: Dictionary):
+    datas[name] = data
+    
+  func _on_allset():
+    pass # do some extra logic after completion
+  ```
+
+
+- ### Download missing sheet only through [gsx2jsonpp](https://github.com/deflinhec/gsx2jsonpp/). [Optional]
+  Dedicate service implements with snapshot and meta info query feature.
+  ```
+  var host = GConfig.Gsx2JsonppHost.new("localhost", 5000)
+  var gsheet: GSheet = null
+  var datas: Dictionary = {}
+  var sheets: Array = []
+  func _ready():
+    var gversion: GVersion = GVersion.new(host)
+    gversion.connect("download", self, "_on_download")
+    yield(gversion.start(), "completed")
+    gsheet = GSheet.new(sheets, host)
     gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
 	
   func _on_complete(name: String, data: Dictionary):
-      pass
-	
+    datas[name] = data
+    
   func _on_allset():
-      pass
+    pass # do some extra logic after completion
+    
+  func _on_download(array: Array):
+    sheets = array
   ```
-
 
 ## :clipboard: TODO-List
 
