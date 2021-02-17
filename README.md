@@ -79,10 +79,10 @@ const GSheet = preload("res://addons/google_sheet/gsheet.gd")
     gsheet.connect("allset", self, "_on_allset")
     gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
 	
-    func _on_complete(name: String, data: Dictionary):
+  func _on_complete(name: String, data: Dictionary):
       pass
 	
-    func _on_allset():
+  func _on_allset():
       pass
   ```
 
