@@ -37,7 +37,7 @@ jobs:
     - name: Configure hostname
       run: >-
         sed -i 's/localhost/gsx2jsonpp/g' \
-        test/unit/test_google_sheet.gd
+        ${GITHUB_WORKSPACE}/test/unit/test_google_sheet.gd
     - name: Run Action
       uses: josephbmanley/run-gut-tests-action@v1.1.0
       with:

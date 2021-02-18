@@ -96,7 +96,7 @@ const GVersion = preload("res://addons/google_sheet/gversion.gd")
 
 
 - ### Download missing sheet only through [gsx2jsonpp](https://github.com/deflinhec/gsx2jsonpp/). [Optional]
-  Dedicate service implements with snapshot and meta info query feature.
+  Dedicate service implements with snapshot and meta info query feature. Example below demonstrates a two step procedure, query meta info of specific spreadsheet and download after.
   ```
   var host = GConfig.Gsx2JsonppHost.new("localhost", 5000)
   var gsheet: GSheet = null
