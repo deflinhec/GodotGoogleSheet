@@ -152,8 +152,6 @@ func _init_queue(files: Array) -> void:
 			file.set_meta("sheet", info[2])
 			file.open(info[0], File.READ)
 			_files.push_back(file)
-		else:
-			print("INFO: Require download: %s" % [info[0]])
 
 
 func _thread_func(_u) -> void:
@@ -177,7 +175,8 @@ func _load_process() -> void:
 		var path = file.get_meta("path")
 		self.steps += 1
 		call_deferred("emit_signal", "complete", path, json.result)
-		print("INFO: %s : %s" % [path, String.humanize_size(buffer.length())])
+		print("INFO: Read %s : %s" % [path, 
+				String.humanize_size(JSON.print(json.result).length())])
 		_files.erase(file)
 		file.close()
 
@@ -222,6 +221,8 @@ func _http_process() -> void:
 	while not _queue.empty():
 		var binaries: PoolByteArray
 		var http: HTTPClient = _queue[0]
+		var path = http.get_meta("path")
+		print("INFO: Downloading %s" % [path])
 		while http.get_status() == HTTPClient.STATUS_BODY:
 			# While there is body left to be read
 			http.poll()
@@ -236,8 +237,7 @@ func _http_process() -> void:
 			else:
 				# Append to read buffer.
 				binaries = binaries + chunk
-		var path = http.get_meta("path")
-		print("INFO: %s : %s" % [path.get_file(), 
+		print("INFO: Receive %s with %s" % [path.get_file(), 
 				String.humanize_size(binaries.size())])
 		var json = parse(JSON.parse(binaries.get_string_from_utf8()))
 		if json.result.has("error"):
@@ -252,7 +252,7 @@ func _http_process() -> void:
 		else:
 			print("WARN: %s %s" % [path, json.result])
 		_queue.erase(http)
-		print("INFO: Total bytes downloaded: %s/%s" % [
+		print("INFO: Total bytes received: %s/%s" % [
 				String.humanize_size(self.steps), 
 				String.humanize_size(self.max_steps)])
 

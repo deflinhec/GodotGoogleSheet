@@ -118,10 +118,12 @@ func _http_process() -> void:
 		var file: File = _files[0]
 		var buffer: String = file.get_as_text()
 		var json = JSON.parse(buffer)
+		buffer = JSON.print(json.result)
 		var path = file.get_meta("path")
-		checksums[path] = JSON.print(json.result).md5_text()
+		checksums[path] = buffer.md5_text()
 		call_deferred("emit_signal", "complete", path, json.result)
-		print("INFO: %s : %s" % [path, String.humanize_size(buffer.length())])
+		print("INFO: Read %s : %s" % [path, 
+				String.humanize_size(buffer.length())])
 		_files.erase(file)
 		file.close()
 	var queue: Array
@@ -180,7 +182,7 @@ func _http_process() -> void:
 				# Append to read buffer.
 				binaries = binaries + chunk
 		var path = http.get_meta("path")
-		print("INFO: %s : %s" % [path.get_file(), 
+		print("INFO: Receive %s meta with %s" % [path.get_file(), 
 				String.humanize_size(binaries.size())])
 		var json = JSON.parse(binaries.get_string_from_utf8())
 		if json.result.has("meta") and json.result["meta"].has("dict"):
@@ -198,6 +200,7 @@ func _http_process() -> void:
 		else:
 			print("WARN: %s %s" % [path, json.result])
 		_queue.erase(http)
+	print("INFO: Patch summary %s" % [String.humanize_size(bytes)])
 	call_deferred("emit_signal", "request", outdated, bytes)
 
 
