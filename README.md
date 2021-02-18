@@ -101,12 +101,12 @@ const GVersion = preload("res://addons/google_sheet/gversion.gd")
   var host = GConfig.Gsx2JsonppHost.new("localhost", 5000)
   var gsheet: GSheet = null
   var datas: Dictionary = {}
-  var sheets: Array = []
+  var outdated: Array = []
   func _ready():
     var gversion: GVersion = GVersion.new(host)
-    gversion.connect("download", self, "_on_download")
+    gversion.connect("request", self, "_on_request")
     yield(gversion.start(), "completed")
-    gsheet = GSheet.new(sheets, host)
+    gsheet = GSheet.new(outdated, host)
     gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
 	
   func _on_complete(name: String, data: Dictionary):
@@ -115,8 +115,8 @@ const GVersion = preload("res://addons/google_sheet/gversion.gd")
   func _on_allset():
     pass # do some extra logic after completion
     
-  func _on_download(array: Array):
-    sheets = array
+  func _on_request(array: Array, bytes: int):
+    outdated = array
   ```
 
 ## :clipboard: TODO-List

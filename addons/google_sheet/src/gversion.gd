@@ -3,7 +3,7 @@ extends Reference
 #warning-ignore:unused_signal
 signal complete(path, dict)
 #warning-ignore:unused_signal
-signal download(list)
+signal request(list, bytes)
 #warning-ignore:unused_signal
 signal allset
 #warning-ignore:unused_signal
@@ -160,7 +160,8 @@ func _http_process() -> void:
 						% [http.get_status(), host.address, host.port])
 				_queue.erase(http)
 	_queue = queue
-	var outdated: Array 
+	var bytes: int = 0
+	var outdated: Array
 	while not _queue.empty():
 		var binaries: PoolByteArray
 		var http: HTTPClient = _queue[0]
@@ -191,12 +192,13 @@ func _http_process() -> void:
 			dict["md5"] = dict["md5"].to_lower()
 			if checksum != dict["md5"]:
 				var info: Array = http.get_meta("info")
+				bytes += dict["bytes"] as int
 				info.push_back(dict["bytes"])
 				outdated.push_back(info)
 		else:
 			print("WARN: %s %s" % [path, json.result])
 		_queue.erase(http)
-	call_deferred("emit_signal", "download", outdated)
+	call_deferred("emit_signal", "request", outdated, bytes)
 
 
 func _set_stage(new_value: int) -> void:

@@ -5,6 +5,7 @@ class DataManager extends Reference:
 	var allset: bool = false
 	var datas: Dictionary
 	var outdated: Array
+	var requestbytes: int = 0
 	
 	func _on_complete(name: String, data: Dictionary):
 		datas[name] = data
@@ -12,7 +13,8 @@ class DataManager extends Reference:
 	func _on_allset():
 		allset = true
 	
-	func _on_download(array: Array):
+	func _on_request(array: Array, bytes: int):
+		requestbytes = bytes
 		outdated = array
 
 const GConfig = preload("res://addons/google_sheet/src/config.gd")
@@ -76,7 +78,7 @@ func test_process_missing_files():
 	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
-	gversion.connect("download", manager, "_on_download")
+	gversion.connect("request", manager, "_on_request")
 	yield(gversion.start(), "completed")
 	assert_false(manager.datas.has("res://datas/test.json"),
 			"file should not load into memory")
@@ -84,6 +86,8 @@ func test_process_missing_files():
 			"file should not exist")
 	assert_false(manager.outdated.empty(),
 			"file should mark as outdated")
+	assert_gt(manager.requestbytes, 0,
+			"requestbytes should greater than 0")
 
 
 func test_process_latest_files():
@@ -93,22 +97,26 @@ func test_process_latest_files():
 	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
-	gversion.connect("download", manager, "_on_download")
+	gversion.connect("request", manager, "_on_request")
 	yield(gversion.start(), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(manager.outdated.empty(),
 			"file should not mark as outdated")
+	assert_eq(manager.requestbytes, 0,
+			"requestbytes should equal to 0")
 
 
 func test_download_missing_files():
 	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var manager = DataManager.new()
 	gversion.connect("complete", manager, "_on_complete")
-	gversion.connect("download", manager, "_on_download")
+	gversion.connect("request", manager, "_on_request")
 	yield(gversion.start(), "completed")
 	assert_false(manager.outdated.empty(),
 			"file should mark as outdated")
+	assert_gt(manager.requestbytes, 0,
+			"requestbytes should greater than 0")
 	var gsheet = GSheet.new(manager.outdated, Gsx2JsonppHost)
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
