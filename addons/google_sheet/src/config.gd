@@ -8,6 +8,13 @@ class Host extends Reference:
 	var field = "dict"
 	var address = "spreadsheet.google.com"
 	var uri = "/feeds/list/%s/%d/public/values?alt=json"
+	func duplicate():
+		var obj = Host.new()
+		obj.port = self.port
+		obj.field = self.field
+		obj.address = self.address
+		obj.uri = self.uri
+		return obj
 
 # gsx2json API service
 # pros: less bytes, predictable bytes length, existing host

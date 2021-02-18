@@ -77,8 +77,9 @@ func _wait(_caller) -> void:
 	_sem.wait()
 
 
-func _init(files: Array, new_host: Host = null) -> void:
-	host = new_host
+func _init(files: Array, new_host: Host) -> void:
+	host = new_host.duplicate()
+	host.uri += "&meta=true"
 	if use_thread:
 		_mutex = Mutex.new()
 		_sem = Semaphore.new()
