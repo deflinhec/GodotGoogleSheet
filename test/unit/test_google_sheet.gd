@@ -28,7 +28,7 @@ const SPREADSHEETS: Array = [
 
 var Gsx2JsonHost = GConfig.Gsx2JsonHost.new("gsx2json.com", 80)
 
-var Gsx2JsonppHost = GConfig.Gsx2JsonppHost.new("gsx2jsonpp", 5000)
+var Gsx2JsonppHost = GConfig.Gsx2JsonppHost.new("localhost", 5000)
 
 func before_each():
 	var dir = Directory.new()
