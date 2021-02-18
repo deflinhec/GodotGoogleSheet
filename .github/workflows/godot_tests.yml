@@ -35,9 +35,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Configure hostname
-      run: >-
-        sed -i 's/localhost/gsx2jsonpp/g' \
-        ${GITHUB_WORKSPACE}/test/unit/test_google_sheet.gd
+      uses: jacobtomlinson/gha-find-replace@master
+        with:
+          find: "localhost"
+          replace: "gsx2jsonpp"
+          include: "test/unit/test_google_sheet.gd"
     - name: Run Action
       uses: josephbmanley/run-gut-tests-action@v1.1.0
       with:
