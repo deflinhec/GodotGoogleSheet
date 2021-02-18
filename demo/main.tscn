@@ -27,19 +27,22 @@ margin_left = 0.319977
 margin_top = 0.200012
 margin_right = -0.320007
 margin_bottom = -0.200012
+text = "Download"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Status" type="Label" parent="."]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -40.0
-margin_top = -28.6667
-margin_right = 40.0
-margin_bottom = -14.6667
+anchor_left = 0.461
+anchor_top = 0.454
+anchor_right = 0.539
+anchor_bottom = 0.477
+margin_left = -0.0640259
+margin_top = 0.0214844
+margin_right = 0.0639648
+margin_bottom = 0.221497
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Idle"
 align = 1
 valign = 1
 __meta__ = {
