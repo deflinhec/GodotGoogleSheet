@@ -36,10 +36,10 @@ jobs:
       uses: actions/checkout@v2
     - name: Configure hostname
       uses: jacobtomlinson/gha-find-replace@master
-        with:
-          find: "localhost"
-          replace: "gsx2jsonpp"
-          include: "test/unit/test_google_sheet.gd"
+      with:
+        find: "localhost"
+        replace: "gsx2jsonpp"
+        include: "test/unit/test_google_sheet.gd"
     - name: Run Action
       uses: josephbmanley/run-gut-tests-action@v1.1.0
       with:
