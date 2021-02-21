@@ -42,7 +42,7 @@ func test_file_download():
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP]), "completed")
+	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.DOWNLOAD]), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
@@ -54,7 +54,7 @@ func test_minimum_file_download():
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP]), "completed")
+	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.DOWNLOAD]), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
@@ -120,7 +120,28 @@ func test_download_missing_files():
 	var gsheet = GSheet.new(manager.outdated, Gsx2JsonppHost)
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start([GSheet.JOB.HTTP]), "completed")
+	yield(gsheet.start([GSheet.JOB.DOWNLOAD]), "completed")
+	assert_true(manager.datas.has("res://datas/test.json"),
+			"file should load into memory")
+	assert_true(File.new().file_exists("res://datas/test.json"), 
+			"file should exist")
+
+
+func test_download_missing_files_itegration():
+	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
+	var gsheet = GSheet.new(gversion, Gsx2JsonppHost)
+	var manager = DataManager.new()
+	gversion.connect("complete", manager, "_on_complete")
+	gversion.connect("request", manager, "_on_request")
+	gsheet.connect("complete", manager, "_on_complete")
+	gsheet.connect("allset", manager, "_on_allset")
+	gversion.start()
+	yield(gversion, "request")
+	assert_false(manager.outdated.empty(),
+			"file should mark as outdated")
+	assert_gt(manager.requestbytes, 0,
+			"requestbytes should greater than 0")
+	yield(gsheet.start([GSheet.JOB.DOWNLOAD]), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 

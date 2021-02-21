@@ -85,7 +85,7 @@ const GVersion = preload("res://addons/google_sheet/gversion.gd")
     gsheet = GSheet.new(SPREADSHEETS, host)
     gsheet.connect("complete", self, "_on_complete")
     gsheet.connect("allset", self, "_on_allset")
-    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
+    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.DOWNLOAD])
     
   func _on_complete(name: String, data: Dictionary):
     datas[name] = data
@@ -107,7 +107,7 @@ const GVersion = preload("res://addons/google_sheet/gversion.gd")
     gversion.connect("request", self, "_on_request")
     yield(gversion.start(), "completed")
     gsheet = GSheet.new(outdated, host)
-    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP])
+    gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.DOWNLOAD])
 	
   func _on_complete(name: String, data: Dictionary):
     datas[name] = data
