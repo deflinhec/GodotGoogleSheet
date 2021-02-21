@@ -7,18 +7,17 @@ const SPREADSHEETS: Array = [
 		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
 	]
 
-var gsheet: GSheet
+var gsheet: GSheet = GSheet.new(SPREADSHEETS)
 
 var datas: Dictionary = {}
 
 func _ready():
-	gsheet = GSheet.new(SPREADSHEETS)
+	$Button.connect("pressed", self, "_on_Button_pressed")
 	gsheet.connect("allset", self, "_on_allset")
 	gsheet.connect("complete", self, "_on_complete")
 	gsheet.connect("stage_changed", self, "_on_stage_changed")
 	gsheet.connect("steps_changed", self, "_on_steps_changed")
 	gsheet.connect("max_steps_changed", self, "_on_max_steps_changed")
-	gsheet.start([GSheet.JOB.LOAD])
 
 
 func _on_stage_changed(stage: int):
@@ -50,7 +49,9 @@ func _on_allset():
 
 
 func _on_Button_pressed():
-	if not gsheet.contains(GSheet.JOB.DOWNLOAD):
+	if not gsheet.contains(GSheet.JOB.LOAD):
+		gsheet.start([GSheet.JOB.LOAD])
+	elif not gsheet.contains(GSheet.JOB.DOWNLOAD):
 		gsheet.start([GSheet.JOB.DOWNLOAD])
 	else:
 		gsheet = GSheet.new(SPREADSHEETS)
@@ -60,4 +61,3 @@ func _on_Button_pressed():
 		gsheet.connect("steps_changed", self, "_on_steps_changed")
 		gsheet.connect("max_steps_changed", self, "_on_max_steps_changed")
 		gsheet.start([GSheet.JOB.LOAD])
-		
