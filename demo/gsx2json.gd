@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const GConfig = preload("res://addons/google_sheet/src/config.gd")
+
 const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
 
 const SPREADSHEETS: Array = [
@@ -7,7 +9,9 @@ const SPREADSHEETS: Array = [
 		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
 	]
 
-var gsheet: GSheet = GSheet.new(SPREADSHEETS)
+var gsx2json: GConfig.Host = GConfig.Gsx2JsonHost.new("gsx2json.com", 80)
+
+var gsheet: GSheet = GSheet.new(SPREADSHEETS, gsx2json)
 
 var datas: Dictionary = {}
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://demo/main.gd" type="Script" id=1]
+[ext_resource path="res://demo/gsx2json.gd" type="Script" id=1]
 
 [node name="CanvasLayer" type="CanvasLayer"]
 script = ExtResource( 1 )
