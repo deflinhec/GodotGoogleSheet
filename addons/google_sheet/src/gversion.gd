@@ -20,7 +20,7 @@ const headers = ["User-Agent: Pirulo/1.0 (Godot)","Accept: */*"]
 # Debugger is not capable of debugging thread process.
 const use_thread: bool = true
 
-enum STAGE { NONE, QUERY, COMPLETE }
+enum STAGE { NONE, LOAD, QUERY, COMPLETE }
 
 var host : Host = null
 var stage: int = STAGE.NONE setget _set_stage, _get_stage
@@ -32,6 +32,8 @@ var _mutex: Mutex
 var _thread: Thread
 var _queue: Array
 var _files: Array
+var _outdated: Array
+var _checksums: Dictionary
 
 
 func start() -> void:
@@ -42,15 +44,6 @@ func start() -> void:
 	yield(self, "allset")
 	if use_thread and _thread.is_active():
 		_thread.wait_to_finish()
-
-
-func get_progress() -> float:
-	var progress: float = 0.0
-	_lock("get_progress")
-	if max_steps != 0 and steps != 0:
-		progress = float(max_steps) / float(steps)
-	_unlock("get_progress")
-	return progress
 
 
 func _lock(_caller) -> void:
@@ -106,29 +99,36 @@ func _init_queue(files: Array) -> void:
 
 
 func _thread_func(_u) -> void:
+	self.stage = STAGE.LOAD
+	_load_process()
 	self.stage = STAGE.QUERY
 	_http_process()
 	self.stage = STAGE.COMPLETE
 	call_deferred("emit_signal", "allset")
 
 
-func _http_process() -> void:
-	var checksums: Dictionary
+func _load_process() -> void:
+	self.steps = 1 if _files.empty() else 0
+	self.max_steps = 1 if _files.empty() else _files.size() + 1
 	while not _files.empty():
 		var file: File = _files[0]
 		var buffer: String = file.get_as_text()
 		var json = JSON.parse(buffer)
 		buffer = JSON.print(json.result)
 		var path = file.get_meta("path")
-		checksums[path] = buffer.md5_text()
+		_checksums[path] = buffer.md5_text()
 		call_deferred("emit_signal", "complete", path, json.result)
+		self.steps += 1
 		print("INFO: Read %s : %s" % [path, 
 				String.humanize_size(buffer.length())])
 		_files.erase(file)
 		file.close()
+
+
+func _http_process() -> void:
 	var queue: Array
-	self.steps = 0
-	self.max_steps = 0
+	self.steps = 1 if _queue.empty() else 0
+	self.max_steps = 1 if _queue.empty() else 0
 	while not _queue.empty():
 		var http: HTTPClient = _queue[0]
 		match http.get_status():
@@ -163,7 +163,6 @@ func _http_process() -> void:
 				_queue.erase(http)
 	_queue = queue
 	var bytes: int = 0
-	var outdated: Array
 	while not _queue.empty():
 		var binaries: PoolByteArray
 		var http: HTTPClient = _queue[0]
@@ -188,20 +187,21 @@ func _http_process() -> void:
 		if json.result.has("meta") and json.result["meta"].has("dict"):
 			var dict = json.result["meta"]["dict"]
 			var checksum: String
-			if checksums.has(path):
-				checksum = checksums[path]
+			if _checksums.has(path):
+				checksum = _checksums[path]
 			checksum = checksum.to_lower()
 			dict["md5"] = dict["md5"].to_lower()
 			if checksum != dict["md5"]:
 				var info: Array = http.get_meta("info")
 				bytes += dict["bytes"] as int
 				info.push_back(dict["bytes"])
-				outdated.push_back(info)
+				_outdated.push_back(info)
 		else:
 			print("WARN: %s %s" % [path, json.result])
 		_queue.erase(http)
+		OS.delay_msec(10)
 	print("INFO: Patch summary %s" % [String.humanize_size(bytes)])
-	call_deferred("emit_signal", "request", outdated, bytes)
+	call_deferred("emit_signal", "request", _outdated, bytes)
 
 
 func _set_stage(new_value: int) -> void:
@@ -210,6 +210,7 @@ func _set_stage(new_value: int) -> void:
 		call_deferred("emit_signal", "stage_changed", new_value)
 	stage = new_value
 	_unlock("_set_stage")
+	OS.delay_msec(10)
 
 
 func _get_stage() -> int:
@@ -226,6 +227,7 @@ func _set_steps(new_value: int) -> void:
 		call_deferred("emit_signal", "steps_changed", new_value)
 	steps = new_value
 	_unlock("_set_steps")
+	OS.delay_msec(10)
 
 
 func _get_steps() -> int:
@@ -242,6 +244,7 @@ func _set_max_steps(new_value: int) -> void:
 		call_deferred("emit_signal", "max_steps_changed", new_value)
 	max_steps = new_value
 	_unlock("_set_max_steps")
+	OS.delay_msec(10)
 
 
 func _get_max_steps() -> int:

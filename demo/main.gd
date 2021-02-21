@@ -34,7 +34,7 @@ func _on_stage_changed(stage: int):
 
 
 func _on_steps_changed(value: int) -> void:
-	$ProgressBar.value = max(value, 1)
+	$ProgressBar.value = value
 
 
 func _on_max_steps_changed(value: int) -> void:
@@ -50,8 +50,8 @@ func _on_allset():
 
 
 func _on_Button_pressed():
-	if not gsheet.contains(GSheet.JOB.HTTP):
-		gsheet.start([GSheet.JOB.HTTP])
+	if not gsheet.contains(GSheet.JOB.DOWNLOAD):
+		gsheet.start([GSheet.JOB.DOWNLOAD])
 	else:
 		gsheet = GSheet.new(SPREADSHEETS)
 		gsheet.connect("allset", self, "_on_allset")

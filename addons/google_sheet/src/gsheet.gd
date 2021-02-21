@@ -13,12 +13,14 @@ signal max_steps_changed
 
 const Host = preload("config.gd").Host
 
+const GVersion = preload("gversion.gd")
+
 const headers = ["User-Agent: Pirulo/1.0 (Godot)","Accept: */*"]
 
 # Debugger is not capable of debugging thread process.
 const use_thread: bool = true
 
-enum JOB { LOAD = 0, HTTP = 1 }
+enum JOB { LOAD = 0, DOWNLOAD = 1 }
 
 enum STAGE { NONE, LOAD, DOWNLOAD, COMPLETE }
 
@@ -75,7 +77,7 @@ static func parse(json: JSONParseResult) -> JSONParseResult:
 	return json
 
 
-func start(array: PoolIntArray = [JOB.LOAD, JOB.HTTP]) -> void:
+func start(array: PoolIntArray = [JOB.LOAD, JOB.DOWNLOAD]) -> void:
 	for v in array: 
 		mask = mask | (1 << v)
 	if not use_thread:
@@ -85,15 +87,6 @@ func start(array: PoolIntArray = [JOB.LOAD, JOB.HTTP]) -> void:
 	yield(self, "allset")
 	if use_thread and _thread.is_active():
 		_thread.wait_to_finish()
-
-
-func get_progress() -> float:
-	var progress: float = 0.0
-	_lock("get_progress")
-	if max_steps != 0 and steps != 0:
-		progress = float(max_steps) / float(steps)
-	_unlock("get_progress")
-	return progress
 
 
 func contains(type: int) -> bool:
@@ -124,13 +117,16 @@ func _wait(_caller) -> void:
 	_sem.wait()
 
 
-func _init(files: Array, new_host: Host = null) -> void:
+func _init(object, new_host: Host = null) -> void:
 	host = new_host if new_host else host
 	if use_thread:
 		_mutex = Mutex.new()
 		_sem = Semaphore.new()
 		_thread = Thread.new()
-	_init_queue(files)
+	if object is Array:
+		_init_queue(object)
+	elif object is GVersion:
+		object.connect("request", self, "_on_request")
 
 
 func _init_queue(files: Array) -> void:
@@ -154,11 +150,15 @@ func _init_queue(files: Array) -> void:
 			_files.push_back(file)
 
 
+func _on_request(outdated: Array, bytes: int):
+	_init_queue(outdated)
+
+
 func _thread_func(_u) -> void:
 	if contains(JOB.LOAD):
 		self.stage = STAGE.LOAD
 		_load_process()
-	if contains(JOB.HTTP):
+	if contains(JOB.DOWNLOAD):
 		self.stage = STAGE.DOWNLOAD
 		_http_process()
 	self.stage = STAGE.COMPLETE
@@ -166,8 +166,8 @@ func _thread_func(_u) -> void:
 
 
 func _load_process() -> void:
-	self.steps = 0
-	self.max_steps = _files.size()
+	self.steps = 1 if _files.empty() else 0
+	self.max_steps = 1 if _files.empty() else _files.size() + 1
 	while not _files.empty():
 		var file: File = _files[0]
 		var buffer: String = file.get_as_text()
@@ -183,8 +183,8 @@ func _load_process() -> void:
 
 func _http_process() -> void:
 	var queue: Array
-	self.steps = 0
-	self.max_steps = 0
+	self.steps = 1 if _queue.empty() else 0
+	self.max_steps = 1 if _queue.empty() else 0
 	while not _queue.empty():
 		var http: HTTPClient = _queue[0]
 		match http.get_status():
@@ -263,6 +263,7 @@ func _set_stage(new_value: int) -> void:
 		call_deferred("emit_signal", "stage_changed", new_value)
 	stage = new_value
 	_unlock("_set_stage")
+	OS.delay_msec(10)
 
 
 func _get_stage() -> int:
@@ -279,6 +280,7 @@ func _set_steps(new_value: int) -> void:
 		call_deferred("emit_signal", "steps_changed", new_value)
 	steps = new_value
 	_unlock("_set_steps")
+	OS.delay_msec(10)
 
 
 func _get_steps() -> int:
@@ -295,6 +297,7 @@ func _set_max_steps(new_value: int) -> void:
 		call_deferred("emit_signal", "max_steps_changed", new_value)
 	max_steps = new_value
 	_unlock("_set_max_steps")
+	OS.delay_msec(10)
 
 
 func _get_max_steps() -> int:

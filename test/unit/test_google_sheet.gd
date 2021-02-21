@@ -42,7 +42,7 @@ func test_file_download():
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP]), "completed")
+	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.DOWNLOAD]), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
@@ -54,7 +54,7 @@ func test_minimum_file_download():
 	var manager = DataManager.new()
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.HTTP]), "completed")
+	yield(gsheet.start([GSheet.JOB.LOAD, GSheet.JOB.DOWNLOAD]), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
@@ -120,7 +120,7 @@ func test_download_missing_files():
 	var gsheet = GSheet.new(manager.outdated, Gsx2JsonppHost)
 	gsheet.connect("complete", manager, "_on_complete")
 	gsheet.connect("allset", manager, "_on_allset")
-	yield(gsheet.start([GSheet.JOB.HTTP]), "completed")
+	yield(gsheet.start([GSheet.JOB.DOWNLOAD]), "completed")
 	assert_true(manager.datas.has("res://datas/test.json"),
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
