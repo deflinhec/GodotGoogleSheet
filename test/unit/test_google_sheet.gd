@@ -127,7 +127,7 @@ func test_download_missing_files():
 			"file should exist")
 
 
-func test_download_missing_files_itergation():
+func test_download_missing_files_itegration():
 	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
 	var gsheet = GSheet.new(gversion, Gsx2JsonppHost)
 	var manager = DataManager.new()
