@@ -125,3 +125,24 @@ func test_download_missing_files():
 			"file should load into memory")
 	assert_true(File.new().file_exists("res://datas/test.json"), 
 			"file should exist")
+
+
+func test_download_missing_files_itergation():
+	var gversion = GVersion.new(SPREADSHEETS, Gsx2JsonppHost)
+	var gsheet = GSheet.new(gversion, Gsx2JsonppHost)
+	var manager = DataManager.new()
+	gversion.connect("complete", manager, "_on_complete")
+	gversion.connect("request", manager, "_on_request")
+	gsheet.connect("complete", manager, "_on_complete")
+	gsheet.connect("allset", manager, "_on_allset")
+	gversion.start()
+	yield(gversion, "request")
+	assert_false(manager.outdated.empty(),
+			"file should mark as outdated")
+	assert_gt(manager.requestbytes, 0,
+			"requestbytes should greater than 0")
+	yield(gsheet.start([GSheet.JOB.DOWNLOAD]), "completed")
+	assert_true(manager.datas.has("res://datas/test.json"),
+			"file should load into memory")
+	assert_true(File.new().file_exists("res://datas/test.json"), 
+			"file should exist")
