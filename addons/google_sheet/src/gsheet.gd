@@ -167,7 +167,7 @@ func _thread_func(_u) -> void:
 
 func _load_process() -> void:
 	self.steps = 1 if _files.empty() else 0
-	self.max_steps = 1 if _files.empty() else _files.size() + 1
+	self.max_steps = 1 if _files.empty() else _files.size()
 	while not _files.empty():
 		var file: File = _files[0]
 		var buffer: String = file.get_as_text()
