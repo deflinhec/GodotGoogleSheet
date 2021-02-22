@@ -13,8 +13,6 @@ signal max_steps_changed
 
 const Host = preload("config.gd").Host
 
-const GVersion = preload("gversion.gd")
-
 const headers = ["User-Agent: Pirulo/1.0 (Godot)","Accept: */*"]
 
 # Debugger is not capable of debugging thread process.
@@ -125,8 +123,8 @@ func _init(object, new_host: Host = null) -> void:
 		_thread = Thread.new()
 	if object is Array:
 		_init_queue(object)
-	elif object is GVersion:
-		object.connect("request", self, "_on_request")
+	else:
+		object.connect("request", self, "_on_init_queue")
 
 
 func _init_queue(files: Array) -> void:
@@ -146,11 +144,10 @@ func _init_queue(files: Array) -> void:
 			file.set_meta("path", info[0])
 			file.set_meta("id", info[1])
 			file.set_meta("sheet", info[2])
-			file.open(info[0], File.READ)
 			_files.push_back(file)
 
 
-func _on_request(outdated: Array, bytes: int):
+func _on_init_queue(outdated: Array, bytes: int):
 	_init_queue(outdated)
 
 
@@ -170,9 +167,10 @@ func _load_process() -> void:
 	self.max_steps = 1 if _files.empty() else _files.size()
 	while not _files.empty():
 		var file: File = _files[0]
+		var path = file.get_meta("path")
+		file.open(path, File.READ)
 		var buffer: String = file.get_as_text()
 		var json = JSON.parse(buffer)
-		var path = file.get_meta("path")
 		self.steps += 1
 		call_deferred("emit_signal", "complete", path, json.result)
 		print("INFO: Read %s : %s" % [path, 
