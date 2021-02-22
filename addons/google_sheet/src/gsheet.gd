@@ -146,7 +146,6 @@ func _init_queue(files: Array) -> void:
 			file.set_meta("path", info[0])
 			file.set_meta("id", info[1])
 			file.set_meta("sheet", info[2])
-			file.open(info[0], File.READ)
 			_files.push_back(file)
 
 
@@ -170,9 +169,10 @@ func _load_process() -> void:
 	self.max_steps = 1 if _files.empty() else _files.size()
 	while not _files.empty():
 		var file: File = _files[0]
+		var path = file.get_meta("path")
+		file.open(path, File.READ)
 		var buffer: String = file.get_as_text()
 		var json = JSON.parse(buffer)
-		var path = file.get_meta("path")
 		self.steps += 1
 		call_deferred("emit_signal", "complete", path, json.result)
 		print("INFO: Read %s : %s" % [path, 
