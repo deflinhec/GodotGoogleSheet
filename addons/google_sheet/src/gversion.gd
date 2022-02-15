@@ -133,7 +133,7 @@ func _http_process() -> void:
 		var http: HTTPClient = _queue[0]
 		match http.get_status():
 			HTTPClient.STATUS_DISCONNECTED:
-				if http.connect_to_host(host.address, host.port) != OK:
+				if http.connect_to_host(host.address, host.port, host.use_ssl) != OK:
 					print("WARN: STATUS_DISCONNECTED %s:%d"
 						% [host.address, host.port])
 					_queue.erase(http)
@@ -143,8 +143,8 @@ func _http_process() -> void:
 				http.poll()
 			HTTPClient.STATUS_CONNECTED:
 				var id: String = http.get_meta("id")
-				var sheet: int = http.get_meta("sheet")
-				var uri: String = host.uri % [id, sheet]
+				var sheet: String = http.get_meta("sheet")
+				var uri: String = host.uri % [id, sheet, host.api_key]
 				if http.request(HTTPClient.METHOD_GET, uri, headers) != OK:
 					print("WARN: STATUS_CONNECTION_ERROR %s:%d"
 						% [host.address, host.port])
