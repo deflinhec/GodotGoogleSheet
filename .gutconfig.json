@@ -1,16 +1,10 @@
 {
-	"dirs":["res://test/unit/"],
-	"double_strategy":"partial",
-	"ignore_pause":false,
-	"include_subdirs":true,
-	"inner_class":"",
-	"log_level":3,
-	"opacity":100,
-	"prefix":"test_",
-	"selected":"",
-	"should_exit":true,
-	"should_maximize":true,
-	"suffix":".gd",
-	"tests": [],
-	"unit_test_name": ""
+    "dirs":[
+        "res://test/unit/"
+    ],
+    "include_subdirs":true,
+    "ignore_pause":true,
+    "log_level":2,
+    "should_exit":true,
+    "should_maximize":false
 }
