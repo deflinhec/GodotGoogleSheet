@@ -12,7 +12,7 @@ const SPREADSHEETS: Array = [
 		"工作表1"],
 	]
 
-var host: GConfig.Host = GConfig.Host.new(API_KEY) 
+var host = GConfig.Host.new(API_KEY) 
 
 var gsheet: GSheet = GSheet.new(SPREADSHEETS, host)
 
