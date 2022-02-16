@@ -2,8 +2,6 @@ name: Run GUT Tests
 
 on:
   push:
-    branches:
-      - master
     paths-ignore:
       - '**.md'
   pull_request:
@@ -16,17 +14,11 @@ jobs:
     container:
       image: barichello/godot-ci:latest
     services:
-      gsx2jsonpp:
-        image: deflinhec/gsx2jsonpp:latest
-        env:
-          ARGUMENTS: --host=0.0.0.0 --port=5000
-        ports:
-          - 5000:5000
-        volumes: 
-          - /volume:/workspace
+      gsx2json-go:
+        image: deflinhec/gsx2json-go:latest
         options: >-
-          --name gsx2jsonpp
-          --health-cmd "nc -z localhost 5000"
+          --name gsx2json-go
+          --health-cmd "nc -z localhost 8080"
           --health-interval 10s 
           --health-timeout 10s 
           --health-retries 6 
@@ -38,7 +30,13 @@ jobs:
       uses: jacobtomlinson/gha-find-replace@master
       with:
         find: "localhost"
-        replace: "gsx2jsonpp"
+        replace: "gsx2json-go"
+        include: "test/unit/test_google_sheet.gd"
+    - name: Configure google api key
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "YOUR_GOOGLE_SHEET_API_KEY"
+        replace: ${{ secrets.GOOGLE_SHEET_API_KEY }}
         include: "test/unit/test_google_sheet.gd"
     - name: Run Action
       uses: josephbmanley/run-gut-tests-action@v1.1.0
