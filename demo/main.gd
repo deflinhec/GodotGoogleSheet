@@ -1,13 +1,20 @@
 extends CanvasLayer
 
+const API_KEY = "YOUR_GOOGLE_SHEET_API_KEY"
+
+const GConfig = preload("res://addons/google_sheet/src/config.gd")
+
 const GSheet = preload("res://addons/google_sheet/src/gsheet.gd")
 
 const SPREADSHEETS: Array = [
 		["res://datas/test.json", 
-		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 1],
+		"1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4", 
+		"工作表1"],
 	]
 
-var gsheet: GSheet = GSheet.new(SPREADSHEETS)
+var host = GConfig.Host.new(API_KEY) 
+
+var gsheet: GSheet = GSheet.new(SPREADSHEETS, host)
 
 var datas: Dictionary = {}
 
@@ -54,7 +61,7 @@ func _on_Button_pressed():
 	elif not gsheet.contains(GSheet.JOB.DOWNLOAD):
 		gsheet.start([GSheet.JOB.DOWNLOAD])
 	else:
-		gsheet = GSheet.new(SPREADSHEETS)
+		gsheet = GSheet.new(SPREADSHEETS, host)
 		gsheet.connect("allset", self, "_on_allset")
 		gsheet.connect("complete", self, "_on_complete")
 		gsheet.connect("stage_changed", self, "_on_stage_changed")
