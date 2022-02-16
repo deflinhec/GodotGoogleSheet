@@ -124,4 +124,6 @@ const GConfig = preload("res://addons/google_sheet/config.gd")
     pass # do some extra logic after completion
   ```
 
-## :coffee: [Buy me a coffee](https://ko-fi.com/deflinhec) 
+## :coffee: Donation
+
+If you like my project and also appericate for the effort. Don't hesitate to [buy me a coffee](https://ko-fi.com/deflinhec)😊.
