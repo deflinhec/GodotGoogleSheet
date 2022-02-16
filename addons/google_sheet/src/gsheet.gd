@@ -58,8 +58,8 @@ static func parse(json: JSONParseResult) -> JSONParseResult:
 			var new_row = {}
 			var row = values[i]
 			for j in range(headings.size()):
-				var name = headings[j].to_lower()
-				if name.begins_with("noex"):
+				var name = headings[j]
+				if name.begins_with("NOEX_"):
 					continue
 				var value = ""
 				if j < row.size():

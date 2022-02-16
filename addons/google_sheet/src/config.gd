@@ -35,10 +35,10 @@ class Gsx2JsonHost extends Host:
 		uri = "/api?id=%s&sheet=%s&api_key=%s&columns=false"
 
 # gsx2jsonpp API service
-# pros: less bytes, predictable bytes length, meta info, snapshot
+# pros: less bytes, predictable bytes length, meta info, cache
 # cons: self-host only, extra configuration
-# https://github.com/deflinhec/gsx2jsonpp
-class Gsx2JsonppHost extends Host:
+# https://github.com/deflinhec/gsx2json-go
+class Gsx2JsonGoHost extends Host:
 	func _init(new_api_key: String, new_address: String, new_port: int):
 		._init(new_api_key)
 		port = new_port
