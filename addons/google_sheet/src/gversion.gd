@@ -184,7 +184,8 @@ func _http_process() -> void:
 		print("INFO: Receive %s meta with %s" % [path.get_file(), 
 				String.humanize_size(binaries.size())])
 		var json = JSON.parse(binaries.get_string_from_utf8())
-		if json.result.has("meta") and json.result["meta"].has("dict"):
+		if json.result and json.result.has("meta") and \
+			json.result["meta"].has("dict"):
 			var dict = json.result["meta"]["dict"]
 			var checksum: String
 			if _checksums.has(path):
