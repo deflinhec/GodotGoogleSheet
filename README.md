@@ -36,6 +36,8 @@ const API_KEY: String = "YOUR GOOGLE API KEY"
 
 const GSheet = preload("res://addons/google_sheet/gsheet.gd")
 
+const GVersion = preload("res://addons/google_sheet/gversion.gd")
+
 const GConfig = preload("res://addons/google_sheet/config.gd")
 ```
 
@@ -87,8 +89,41 @@ const GConfig = preload("res://addons/google_sheet/config.gd")
     pass # do some extra logic after completion
   ```
 
-## :clipboard: TODO-List
+- ### Run md5 checksum before downloads.
 
-- :white_check_mark: Patch file versioning
+  This feature use a dedicate service which can be download here [gsx2json-go](https://github.com/deflinhec/gsx2json-go).
 
-## :coffee: [Buy me a coffee](https://ko-fi.com/deflinhec) 
+  ```gdscript
+  var host = GConfig.Gsx2JsonGoHost.new(API_KEY, "localhost", 8080)
+
+  var gversion: GVersion = GVersion.new(SPREADSHEETS, host)
+
+  var gsheet : GSheet = GSheet.new(gversion, host)
+  
+  var datas: Dictionary = {}
+  
+  var requestbytes: int = 0
+  
+  var outdated: Array = []
+
+  func _ready():
+    gversion.connect("complete", self, "_on_complete")
+	gversion.connect("request", self, "_on_request")
+    gsheet.connect("complete", self, "_on_complete")
+    gsheet.connect("allset", self, "_on_allset")
+    gversion.start()
+    
+  func _on_complete(name: String, data: Dictionary):
+    datas[name] = data
+    
+  func _on_request(array: Array, bytes: int):
+	requestbytes = bytes
+	outdated = array
+    
+  func _on_allset():
+    pass # do some extra logic after completion
+  ```
+
+## :coffee: Donation
+
+If you like my project and also appericate for the effort. Don't hesitate to [buy me a coffee](https://ko-fi.com/deflinhec)😊.
