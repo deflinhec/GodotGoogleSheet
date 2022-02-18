@@ -41,6 +41,12 @@ const GVersion = preload("res://addons/google_sheet/gversion.gd")
 const GConfig = preload("res://addons/google_sheet/config.gd")
 ```
 
+## :dart: Spreadsheet rule
+
+- Column name begin with `NOEX_` will not export to the final result.
+
+- Make sure to add a left most column represents as an unique integer key.
+
 ## :bookmark: Examples
 
 - ### Download sheets from google sheet api v4.
@@ -65,6 +71,40 @@ const GConfig = preload("res://addons/google_sheet/config.gd")
   func _on_allset():
     pass # do some extra logic after completion
   ```
+  
+  <details>
+  <summary><b>Result of downloaded content.</b></summary>
+	
+  [Example Google Sheets](https://docs.google.com/spreadsheets/d/1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4/edit#gid=0)
+
+  - dictionary field
+	
+	  ```json
+	  {
+	    "1": {
+	      "key": 1,
+	      "column1": "1b",
+	      "column2": 11
+	    },
+	    "2": {
+	      "key": 2,
+	      "column1": "2b",
+	      "column2": 22
+	    },
+	    "3": {
+	      "key": 3,
+	      "column1": "3b",
+	      "column2": 33
+	    },
+	    "4": {
+	      "key": 4,
+	      "column1": "4b",
+	      "column2": 44
+	    }
+	  }
+  	  ```
+
+  </details>
 
 - ### Load sheets from file.
 
@@ -123,6 +163,94 @@ const GConfig = preload("res://addons/google_sheet/config.gd")
   func _on_allset():
     pass # do some extra logic after completion
   ```
+ 
+  <details>
+  <summary><b>Result of downloaded content.</b></summary>
+	
+  [Example Google Sheets](https://docs.google.com/spreadsheets/d/1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4/edit#gid=0)
+
+  - dictionary field
+	
+	  ```json
+	  {
+	    "1": {
+	      "key": 1,
+	      "column1": "1b",
+	      "column2": 11
+	    },
+	    "2": {
+	      "key": 2,
+	      "column1": "2b",
+	      "column2": 22
+	    },
+	    "3": {
+	      "key": 3,
+	      "column1": "3b",
+	      "column2": 33
+	    },
+	    "4": {
+	      "key": 4,
+	      "column1": "4b",
+	      "column2": 44
+	    }
+	  }
+
+  - rows field (feature by [gsx2json-go](https://github.com/deflinhec/gsx2json-go).)
+	
+	  ```json
+	  [
+	    {
+	      "key": 1,
+	      "column1": "1b",
+	      "column2": 11
+	    },
+	    {
+	      "key": 2,
+	      "column1": "2b",
+	      "column2": 22
+	    },
+	    {
+	      "key": 3,
+	      "column1": "3b",
+	      "column2": 33
+	    },
+	    {
+	      "key": 4,
+	      "column1": "4b",
+	      "column2": 44
+	    }
+	  ]
+	  ```
+
+  - columns field (feature by [gsx2json-go](https://github.com/deflinhec/gsx2json-go).)
+
+  	  ```json
+	  {
+	    "key": [
+	      1,
+	      2,
+	      3,
+	      4
+	    ],
+	    "column1": [
+	      "1b",
+	      "2b",
+	      "3b",
+	      "4b"
+	    ],
+	    "column2": [
+	      11,
+	      22,
+	      33,
+	      44
+	    ]
+	  }
+	  ```
+
+  </details>
+
+
+
 
 ## :coffee: Donation
 
